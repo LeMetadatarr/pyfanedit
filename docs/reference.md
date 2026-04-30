@@ -205,6 +205,170 @@ print(detail.imdb_id, detail.genre, detail.time_cut)
 
 ---
 
+### Reviewer Leaderboard
+
+#### `get_reviewer_rank`
+
+`pyfanedit/client.py:190`
+
+```python
+get_reviewer_rank(page: int = 1) -> tuple[list[ReviewerEntry], str | None]
+```
+
+Return one page of the reviewer leaderboard (approximately 50 entries per page).
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `page` | `int` | `1` | 1-based page number |
+
+Returns `(entries, next_page_url)` where `next_page_url` is `None` on the last page.
+Each `ReviewerEntry` includes a `user_id` that can be passed directly to `get_user_reviews`.
+
+```python
+entries, _ = client.get_reviewer_rank()
+print(entries[0].username, entries[0].review_count, entries[0].helpful_pct)
+```
+
+#### `iter_reviewer_rank`
+
+`pyfanedit/client.py:199`
+
+```python
+iter_reviewer_rank(max_pages: int = 0) -> Iterator[ReviewerEntry]
+```
+
+Yield all reviewers from the leaderboard across pages. `max_pages=0` means no limit.
+
+```python
+for reviewer in client.iter_reviewer_rank(max_pages=2):
+    print(reviewer.rank, reviewer.username)
+```
+
+---
+
+### Reviews by User
+
+#### `get_user_reviews`
+
+`pyfanedit/client.py:224`
+
+```python
+get_user_reviews(
+    user_id: int,
+    page: int = 1,
+    order: str = "rdate",
+) -> tuple[list[UserReviewEntry], str | None]
+```
+
+Return one page of reviews written by a specific user.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `user_id` | `int` | — | Numeric jReviews user ID from `ReviewerEntry.user_id` |
+| `page` | `int` | `1` | 1-based page number |
+| `order` | `str` | `"rdate"` | Sort order — see `REVIEW_ORDER_CHOICES` |
+
+Returns `(reviews, next_page_url)`.
+
+```python
+reviews, _ = client.get_user_reviews(1234, order="helpful")
+for r in reviews:
+    print(r.fanedit_title, r.ratings.overall)
+```
+
+#### `iter_user_reviews`
+
+`pyfanedit/client.py:244`
+
+```python
+iter_user_reviews(
+    user_id: int,
+    order: str = "rdate",
+    max_pages: int = 0,
+) -> Iterator[UserReviewEntry]
+```
+
+Yield all reviews written by a user across pages.
+
+```python
+for review in client.iter_user_reviews(1234, max_pages=5):
+    print(review.date, review.fanedit_title)
+```
+
+#### `get_latest_user_reviews`
+
+`pyfanedit/client.py:259`
+
+```python
+get_latest_user_reviews(page: int = 1) -> tuple[list[FaneditSummary], str | None]
+```
+
+Return the latest-user-reviews feed (all users). Returns `(items, next_page_url)`.
+
+```python
+items, _ = client.get_latest_user_reviews()
+```
+
+#### `get_latest_trusted_reviews`
+
+`pyfanedit/client.py:264`
+
+```python
+get_latest_trusted_reviews(page: int = 1) -> tuple[list[FaneditSummary], str | None]
+```
+
+Return the latest trusted-reviewer reviews feed. Returns `(items, next_page_url)`.
+
+```python
+items, _ = client.get_latest_trusted_reviews()
+```
+
+---
+
+### News
+
+#### `get_news`
+
+`pyfanedit/client.py:273`
+
+```python
+get_news() -> list[NewsArticle]
+```
+
+Return the news front page article cards (up to approximately 15 articles). Card-level
+fields are populated; `body_html`, `body_text`, `views`, `category`, and
+`mentioned_fanedit_urls` are always empty — call `get_news_article` for those.
+
+```python
+articles = client.get_news()
+for a in articles:
+    print(a.title, a.published_at)
+```
+
+#### `get_news_article`
+
+`pyfanedit/client.py:278`
+
+```python
+get_news_article(url: str) -> NewsArticle
+```
+
+Fetch a full news article including body text and IFDB URLs mentioned in the body.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `url` | `str` | Full URL or a forums-relative path such as `"/forums/news-publisher/some-article.185/"` |
+
+```python
+article = client.get_news_article("https://fanedit.org/forums/news-publisher/some-article.185/")
+print(article.body_text)
+for fanedit_url in article.mentioned_fanedit_urls:
+    detail = client.get_detail(fanedit_url)
+    print(detail.title)
+```
+
+---
+
 ## Constants
 
 ### `CATEGORIES`
@@ -242,6 +406,36 @@ ORDER_CHOICES = ("rdate", "date", "modified", "alpha", "rratio", "rvote")
 | `alpha` | Alphabetical by title |
 | `rratio` | Highest editor/trusted-reviewer rating first |
 | `rvote` | Most user votes first |
+
+### `REVIEW_ORDER_CHOICES`
+
+`pyfanedit/client.py:213`
+
+Controls the sort order for `get_user_reviews` and `iter_user_reviews`.
+
+```python
+REVIEW_ORDER_CHOICES = (
+    "rdate",     # most recent
+    "date",      # oldest first
+    "rating",    # highest overall rating first
+    "rrating",   # lowest overall rating first (most critical)
+    "updated",   # last updated first
+    "helpful",   # most helpful votes first
+    "rhelpful",  # least helpful votes first
+    "discussed", # most comments first
+)
+```
+
+| Value | Sort order |
+|---|---|
+| `rdate` | Most recently written, newest first (default) |
+| `date` | Oldest reviews first |
+| `rating` | Highest overall rating first |
+| `rrating` | Lowest overall rating first |
+| `updated` | Most recently edited first |
+| `helpful` | Most helpful votes first |
+| `rhelpful` | Least helpful votes first |
+| `discussed` | Most comments first |
 
 ---
 
@@ -353,6 +547,72 @@ All fields are `Optional[float]`, defaulting to `None` if the rating row is abse
 | `visual_editing` | `"visual editing"` |
 | `narrative` | `"narrative"` |
 | `enjoyment` | `"enjoyment"` |
+
+---
+
+### `ReviewerEntry`
+
+`pyfanedit/models.py:101`
+
+One row from the reviewer leaderboard (`/reviewer-rank/`). The `user_id` field is the
+stable numeric key used by `get_user_reviews`.
+
+| Field | Type | Nullable | Source |
+|---|---|---|---|
+| `rank` | `int` | No | Rank number in the leaderboard column |
+| `user_id` | `int` | No | `id="user-N"` on the rank column element |
+| `username` | `str` | No | `.jrReviewAuthor a` text |
+| `profile_url` | `str` | No | `.jrReviewAuthor a` href |
+| `reviews_url` | `str` | No | Review count link href, or constructed as `/my-reviews/{user_id}/` |
+| `review_count` | `int` | No | Number in the review count link text |
+| `helpful_yes` | `int` | Yes | First number in `"Helpful votes: N (P%)"` |
+| `helpful_pct` | `float` | Yes | Percentage in `"Helpful votes: N (P%)"` |
+
+---
+
+### `UserReviewEntry`
+
+`pyfanedit/models.py:113`
+
+One review from a user's review list page (`/my-reviews/{user_id}/`). Contains the
+fanedit being reviewed and the ratings given, but not the review body text (which is only
+available on the fanedit detail page).
+
+| Field | Type | Nullable | Source |
+|---|---|---|---|
+| `fanedit_title` | `str` | No | `.jrListingTitle a` text |
+| `fanedit_url` | `str` | No | `.jrListingTitle a` href, always absolute |
+| `fanedit_type` | `str` | Yes | `.jrListingCategory` text |
+| `date` | `str` | Yes | `.jrReviewCreated` `datetime` attribute or text |
+| `ratings` | `ReviewRatings` | No (empty model) | `.jrRatingTable` |
+| `discussion_url` | `str` | Yes | `href` of the comments button containing `/discussions/` |
+| `comment_count` | `int` | Yes | Number in `"Comments (N)"` button text |
+
+---
+
+### `NewsArticle`
+
+`pyfanedit/models.py:124`
+
+A news article. Fields from the listing card are always populated when returned by
+`get_news`. Fields marked "article page only" are `None` from `get_news` and populated
+only when fetching a specific article via `get_news_article`.
+
+| Field | Type | Nullable | Source |
+|---|---|---|---|
+| `thread_id` | `int` | No | `js-threadListItem-N` CSS class on the card element |
+| `title` | `str` | No | `.newsCard-grid-title a` text (card) or `h1.p-title-value` (article) |
+| `url` | `str` | No | Card link href or URL passed to `get_news_article` |
+| `thumbnail_url` | `str` | Yes | `img.newsCard-grid-image-link` `src` (card) or `img.newsView-newsThumbnail-header` `src` (article) |
+| `author` | `str` | Yes | `img[alt]` inside the avatar link (card) or `a[data-user-id]` text (article) |
+| `author_user_id` | `int` | Yes | `data-user-id` attribute on the avatar link |
+| `published_at` | `str` | Yes | `time` element `datetime` attribute (ISO string) |
+| `reading_time` | `str` | Yes | `li.newsCard-date` text containing `"min read"` |
+| `views` | `int` | Yes | Article page only — `"Views N"` in `.pairs--justified` |
+| `category` | `str` | Yes | Article page only — last breadcrumb link text |
+| `body_html` | `str` | Yes | Article page only — raw HTML of `.bbWrapper` |
+| `body_text` | `str` | Yes | Article page only — plain text of `.bbWrapper` |
+| `mentioned_fanedit_urls` | `list[str]` | No (empty list) | Article page only — all `<a href>` inside `.bbWrapper` pointing to `fanedit.org` but not to `/forums/` |
 
 ---
 

@@ -210,6 +210,89 @@ in `pyfanedit/parsers.py:33` and add the field to `FaneditSummary` in
 
 ---
 
+## Working with Reviewers and News
+
+### Fetching a Top Reviewer's Full Review History
+
+The reviewer leaderboard (`/reviewer-rank/`) lists users ordered by review count.
+`ReviewerEntry.user_id` is the numeric key needed by `get_user_reviews`, so no separate
+lookup of the username is required.
+
+```python
+import time
+from pyfanedit import FaneditClient
+
+client = FaneditClient()
+
+# Get the top reviewer from the first leaderboard page
+entries, _ = client.get_reviewer_rank()
+top = entries[0]
+print(f"{top.username} — {top.review_count} reviews, {top.helpful_pct}% helpful")
+
+# Fetch all their reviews, sorted by most helpful first
+for review in client.iter_user_reviews(top.user_id, order="helpful"):
+    print(review.fanedit_title, review.ratings.overall)
+    time.sleep(0.3)
+```
+
+`get_reviewer_rank` — `pyfanedit/client.py:190`
+`iter_user_reviews` — `pyfanedit/client.py:244`
+
+### Building a "New Fanedits This Week" Feed from News
+
+`get_news` returns article cards from the news front page. Each `NewsArticle` has a `url`
+that can be passed to `get_news_article` to retrieve the full article body and the list of
+IFDB fanedit URLs mentioned in it.
+
+```python
+import time
+from pyfanedit import FaneditClient
+
+client = FaneditClient()
+
+articles = client.get_news()
+for card in articles:
+    print(card.title, card.published_at)
+
+    # Fetch the full article
+    article = client.get_news_article(card.url)
+
+    # mentioned_fanedit_urls contains all fanedit.org links in the article body
+    for fanedit_url in article.mentioned_fanedit_urls:
+        detail = client.get_detail(fanedit_url)
+        print("  -", detail.title, detail.fanedit_release_date)
+        time.sleep(0.3)
+```
+
+`get_news` — `pyfanedit/client.py:273`
+`get_news_article` — `pyfanedit/client.py:278`
+
+`mentioned_fanedit_urls` collects every `<a href>` inside the article body that points to
+`fanedit.org` but not to `/forums/`. — `pyfanedit/parsers.py:668`
+
+> **Note:** Not all news articles mention individual fanedits. `mentioned_fanedit_urls`
+> will be an empty list for editorial pieces that only link to category or search pages.
+
+### `REVIEW_ORDER_CHOICES` Values
+
+Pass any of these strings as the `order` parameter to `get_user_reviews` or
+`iter_user_reviews`. The default is `"rdate"`.
+
+| Value | Sort order |
+|---|---|
+| `rdate` | Most recently written, newest first |
+| `date` | Oldest reviews first |
+| `rating` | Highest overall rating first |
+| `rrating` | Lowest overall rating first (most critical) |
+| `updated` | Most recently edited first |
+| `helpful` | Most helpful votes first |
+| `rhelpful` | Least helpful votes first |
+| `discussed` | Most comments on the discussion thread first |
+
+`REVIEW_ORDER_CHOICES` — `pyfanedit/client.py:213`
+
+---
+
 ## See also
 
 - [API Reference](reference.md)
