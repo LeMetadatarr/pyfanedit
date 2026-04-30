@@ -571,7 +571,9 @@ def parse_news_listing(html: str) -> List[NewsArticle]:
         for li in card.find_all("li", class_="newsCard-date"):
             text = li.get_text(strip=True)
             if "min read" in text:
-                reading_time = text
+                # strip SVG title prefix ("Reading time2 min read" → "2 min read")
+                m = re.search(r"(\d+\s*min read)", text)
+                reading_time = m.group(1) if m else text
 
         articles.append(NewsArticle(
             thread_id=thread_id,
@@ -632,7 +634,8 @@ def parse_news_article(html: str, url: str) -> NewsArticle:
         for li in desc.find_all("li"):
             text = li.get_text(strip=True)
             if "min read" in text:
-                reading_time = text
+                m = re.search(r"(\d+\s*min read)", text)
+                reading_time = m.group(1) if m else text
 
     # view count from pairs--justified
     for pair in soup.find_all(class_="pairs--justified"):
