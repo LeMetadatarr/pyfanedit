@@ -1,6 +1,0 @@
-beautifulsoup4
-curl_cffi
-pydantic>=2.0
-
-[test]
-pytest
