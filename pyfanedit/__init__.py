@@ -1,5 +1,9 @@
 from pyfanedit.client import CATEGORIES, FaneditClient
-from pyfanedit.models import FaneditDetail, FaneditSummary
+from pyfanedit.models import (
+    FaneditDetail, FaneditSummary,
+    NewsArticle, Review, ReviewRatings,
+    ReviewerEntry, UserReviewEntry,
+)
 from pyfanedit.version import __version__
 
 __all__ = [
@@ -7,5 +11,10 @@ __all__ = [
     "FaneditClient",
     "FaneditSummary",
     "FaneditDetail",
+    "ReviewerEntry",
+    "UserReviewEntry",
+    "NewsArticle",
+    "Review",
+    "ReviewRatings",
     "CATEGORIES",
 ]

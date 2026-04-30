@@ -6,7 +6,10 @@ from typing import List, Optional, Tuple
 
 from bs4 import BeautifulSoup, Tag
 
-from pyfanedit.models import FaneditDetail, FaneditSummary, Review, ReviewRatings
+from pyfanedit.models import (
+    FaneditDetail, FaneditSummary, NewsArticle,
+    Review, ReviewRatings, ReviewerEntry, UserReviewEntry,
+)
 
 # Map of raw label text → FaneditDetail field name
 _DETAIL_FIELD_MAP = {
@@ -362,4 +365,323 @@ def parse_detail_page(html: str, url: str) -> FaneditDetail:
         user_reviews=user_reviews,
         extra_fields=extra,
         **known,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Reviewer leaderboard
+# ---------------------------------------------------------------------------
+
+def parse_reviewer_rank_page(html: str) -> Tuple[List[ReviewerEntry], Optional[str]]:
+    """Parse one page of /reviewer-rank/. Returns (entries, next_page_url)."""
+    soup = BeautifulSoup(html, "html.parser")
+    entries: List[ReviewerEntry] = []
+
+    for row in soup.find_all(class_="jrRow"):
+        if "jrDataListHeader" in (row.get("class") or []):
+            continue
+
+        rank_col = row.find(class_="jrCenterAlign")
+        if rank_col is None:
+            continue
+        user_id_m = re.match(r"user-(\d+)", rank_col.get("id", ""))
+        if not user_id_m:
+            continue
+        user_id = int(user_id_m.group(1))
+        try:
+            rank = int(rank_col.get_text(strip=True))
+        except ValueError:
+            continue
+
+        # username + profile URL
+        author_el = row.find(class_="jrReviewAuthor")
+        if author_el is None:
+            continue
+        a = author_el.find("a")
+        username = a.get_text(strip=True) if a else ""
+        profile_url = a["href"] if a else ""
+
+        # review count + helpful votes
+        content = row.find(class_="jrRankContent")
+        review_count = 0
+        helpful_yes = None
+        helpful_pct = None
+        if content:
+            rev_a = content.find("a")
+            if rev_a:
+                reviews_url = rev_a["href"]
+                m = re.search(r"(\d+)", rev_a.get_text())
+                if m:
+                    review_count = int(m.group(1))
+            else:
+                reviews_url = f"https://fanedit.org/my-reviews/{user_id}/"
+            text = content.get_text(" ", strip=True)
+            hm = re.search(r"Helpful votes:\s*(\d+)\s*\(([0-9.]+)%\)", text)
+            if hm:
+                helpful_yes = int(hm.group(1))
+                helpful_pct = float(hm.group(2))
+        else:
+            reviews_url = f"https://fanedit.org/my-reviews/{user_id}/"
+
+        entries.append(ReviewerEntry(
+            rank=rank,
+            user_id=user_id,
+            username=username,
+            profile_url=profile_url,
+            reviews_url=reviews_url,
+            review_count=review_count,
+            helpful_yes=helpful_yes,
+            helpful_pct=helpful_pct,
+        ))
+
+    next_url: Optional[str] = None
+    pagenav = soup.find(class_="jrPagination")
+    if pagenav:
+        current = pagenav.find(class_="jrPageCurrent")
+        if current:
+            nxt = current.find_next_sibling("a")
+            if nxt and nxt.get("href"):
+                next_url = nxt["href"]
+
+    return entries, next_url
+
+
+# ---------------------------------------------------------------------------
+# Reviews by user
+# ---------------------------------------------------------------------------
+
+def parse_user_reviews_page(html: str) -> Tuple[List[UserReviewEntry], Optional[str]]:
+    """Parse one page of /my-reviews/{user_id}/. Returns (reviews, next_page_url)."""
+    soup = BeautifulSoup(html, "html.parser")
+    reviews: List[UserReviewEntry] = []
+
+    for el in soup.find_all(class_="jrReviewListLayout"):
+        # fanedit link
+        listing_title = el.find(class_="jrListingTitle")
+        if listing_title is None:
+            continue
+        a = listing_title.find("a")
+        if a is None:
+            continue
+        fanedit_url = a["href"]
+        if not fanedit_url.startswith("http"):
+            fanedit_url = "https://fanedit.org" + fanedit_url
+        fanedit_title = a.get_text(strip=True)
+
+        fanedit_type: Optional[str] = None
+        cat_el = el.find(class_="jrListingCategory")
+        if cat_el:
+            fanedit_type = cat_el.get_text(strip=True)
+
+        date: Optional[str] = None
+        date_el = el.find(class_="jrReviewCreated")
+        if date_el:
+            date = date_el.get("datetime") or date_el.get_text(strip=True)
+
+        rating_table = el.find(class_="jrRatingTable")
+        ratings = _parse_review_ratings(rating_table) if rating_table else ReviewRatings()
+
+        discussion_url: Optional[str] = None
+        comment_count: Optional[int] = None
+        for btn_a in el.find_all("a", class_="jrButton"):
+            href = btn_a.get("href", "")
+            if "/discussions/" in href:
+                discussion_url = href
+                m = re.search(r"Comments?\s*\((\d+)\)", btn_a.get_text())
+                if m:
+                    comment_count = int(m.group(1))
+
+        reviews.append(UserReviewEntry(
+            fanedit_title=fanedit_title,
+            fanedit_url=fanedit_url,
+            fanedit_type=fanedit_type,
+            date=date,
+            ratings=ratings,
+            discussion_url=discussion_url,
+            comment_count=comment_count,
+        ))
+
+    next_url: Optional[str] = None
+    pagenav = soup.find(class_="jrPagination")
+    if pagenav:
+        current = pagenav.find(class_="jrPageCurrent")
+        if current:
+            nxt = current.find_next_sibling("a")
+            if nxt and nxt.get("href"):
+                next_url = nxt["href"]
+
+    return reviews, next_url
+
+
+# ---------------------------------------------------------------------------
+# News
+# ---------------------------------------------------------------------------
+
+def _thread_id_from_card(card: Tag) -> Optional[int]:
+    for cls in card.get("class", []):
+        m = re.match(r"js-threadListItem-(\d+)", cls)
+        if m:
+            return int(m.group(1))
+    return None
+
+
+def parse_news_listing(html: str) -> List[NewsArticle]:
+    """Parse the news front page (/forums/news-publisher/)."""
+    soup = BeautifulSoup(html, "html.parser")
+    articles: List[NewsArticle] = []
+
+    for card in soup.find_all(class_="newsCard-grid-item"):
+        thread_id = _thread_id_from_card(card)
+        if thread_id is None:
+            continue
+
+        title_el = card.find(class_="newsCard-grid-title")
+        if title_el is None:
+            continue
+        a = title_el.find("a")
+        if a is None:
+            continue
+        title = a.get_text(strip=True)
+        href = a["href"]
+        url = href if href.startswith("http") else "https://fanedit.org" + href
+
+        thumbnail_url: Optional[str] = None
+        img = card.find("img", class_="newsCard-grid-image-link")
+        if img:
+            thumbnail_url = img.get("src")
+
+        author: Optional[str] = None
+        author_user_id: Optional[int] = None
+        avatar_a = card.find("a", attrs={"data-user-id": True})
+        if avatar_a:
+            author_img = avatar_a.find("img")
+            if author_img:
+                author = author_img.get("alt")
+            try:
+                author_user_id = int(avatar_a["data-user-id"])
+            except (ValueError, KeyError):
+                pass
+
+        published_at: Optional[str] = None
+        time_el = card.find("time")
+        if time_el:
+            published_at = time_el.get("datetime")
+
+        reading_time: Optional[str] = None
+        for li in card.find_all("li", class_="newsCard-date"):
+            text = li.get_text(strip=True)
+            if "min read" in text:
+                reading_time = text
+
+        articles.append(NewsArticle(
+            thread_id=thread_id,
+            title=title,
+            url=url,
+            thumbnail_url=thumbnail_url,
+            author=author,
+            author_user_id=author_user_id,
+            published_at=published_at,
+            reading_time=reading_time,
+        ))
+
+    return articles
+
+
+def parse_news_article(html: str, url: str) -> NewsArticle:
+    """Parse a single news article page."""
+    soup = BeautifulSoup(html, "html.parser")
+
+    # thread ID from article data attr
+    article_el = soup.find("article", class_="newsBody-main")
+    thread_id = 0
+    if article_el:
+        lb_id = article_el.get("data-lb-id", "")
+        m = re.search(r"(\d+)", lb_id)
+        if m:
+            thread_id = int(m.group(1))
+
+    # title
+    title_el = soup.find("h1", class_="p-title-value") or soup.find("h1")
+    title = title_el.get_text(strip=True) if title_el else ""
+
+    # thumbnail
+    thumbnail_url: Optional[str] = None
+    thumb_img = soup.find("img", class_="newsView-newsThumbnail-header")
+    if thumb_img:
+        thumbnail_url = thumb_img.get("src")
+
+    # author + published
+    author: Optional[str] = None
+    author_user_id: Optional[int] = None
+    published_at: Optional[str] = None
+    reading_time: Optional[str] = None
+    views: Optional[int] = None
+
+    desc = soup.find(class_="p-description")
+    if desc:
+        author_a = desc.find("a", attrs={"data-user-id": True})
+        if author_a:
+            author = author_a.get_text(strip=True)
+            try:
+                author_user_id = int(author_a["data-user-id"])
+            except (ValueError, KeyError):
+                pass
+        time_el = desc.find("time")
+        if time_el:
+            published_at = time_el.get("datetime")
+        for li in desc.find_all("li"):
+            text = li.get_text(strip=True)
+            if "min read" in text:
+                reading_time = text
+
+    # view count from pairs--justified
+    for pair in soup.find_all(class_="pairs--justified"):
+        text = pair.get_text(" ", strip=True)
+        m = re.search(r"Views\s+([\d,]+)", text)
+        if m:
+            try:
+                views = int(m.group(1).replace(",", ""))
+            except ValueError:
+                pass
+
+    # category from breadcrumb
+    category: Optional[str] = None
+    crumbs = soup.find_all(class_="p-breadcrumbs")
+    if not crumbs:
+        crumbs = soup.find_all(attrs={"itemprop": "breadcrumb"})
+    if crumbs:
+        links = crumbs[-1].find_all("a") if crumbs else []
+        if links:
+            category = links[-1].get_text(strip=True)
+
+    # body
+    body_html: Optional[str] = None
+    body_text: Optional[str] = None
+    bb = soup.find(class_="bbWrapper")
+    if bb:
+        body_html = str(bb)
+        body_text = bb.get_text(" ", strip=True)
+
+    # mentioned IFDB fanedit URLs
+    mentioned: List[str] = []
+    if bb:
+        for a in bb.find_all("a", href=True):
+            href = a["href"]
+            if "fanedit.org" in href and "/forums/" not in href and href not in mentioned:
+                mentioned.append(href)
+
+    return NewsArticle(
+        thread_id=thread_id,
+        title=title,
+        url=url,
+        thumbnail_url=thumbnail_url,
+        author=author,
+        author_user_id=author_user_id,
+        published_at=published_at,
+        reading_time=reading_time,
+        views=views,
+        category=category,
+        body_html=body_html,
+        body_text=body_text,
+        mentioned_fanedit_urls=mentioned,
     )

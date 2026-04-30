@@ -96,3 +96,45 @@ class FaneditDetail(BaseModel):
 
     # Raw overflow for any unmapped fields
     extra_fields: Dict[str, str] = Field(default_factory=dict)
+
+
+class ReviewerEntry(BaseModel):
+    """One row from the reviewer leaderboard."""
+    rank: int
+    user_id: int                    # numeric jReviews user ID (stable)
+    username: str
+    profile_url: str                # /members/{username}/
+    reviews_url: str                # /my-reviews/{user_id}/
+    review_count: int
+    helpful_yes: Optional[int] = None
+    helpful_pct: Optional[float] = None  # e.g. 76.61
+
+
+class UserReviewEntry(BaseModel):
+    """One review from a user's review list page."""
+    fanedit_title: str
+    fanedit_url: str
+    fanedit_type: Optional[str] = None
+    date: Optional[str] = None
+    ratings: ReviewRatings = Field(default_factory=ReviewRatings)
+    discussion_url: Optional[str] = None
+    comment_count: Optional[int] = None
+
+
+class NewsArticle(BaseModel):
+    """A news article from the front page or article page."""
+    # from listing card
+    thread_id: int                  # XenForo thread ID
+    title: str
+    url: str                        # full URL to article
+    thumbnail_url: Optional[str] = None
+    author: Optional[str] = None
+    author_user_id: Optional[int] = None
+    published_at: Optional[str] = None  # ISO datetime string
+    reading_time: Optional[str] = None
+    # from article page (only when fetched individually)
+    views: Optional[int] = None
+    category: Optional[str] = None
+    body_html: Optional[str] = None
+    body_text: Optional[str] = None
+    mentioned_fanedit_urls: List[str] = Field(default_factory=list)
