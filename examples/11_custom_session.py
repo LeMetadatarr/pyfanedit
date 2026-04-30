@@ -20,7 +20,6 @@ client = FaneditClient(
 session = Session(
     impersonate="safari17_0",
     cache_ttl=0,       # disable cache entirely (always fresh)
-    cache_size=0,
 )
 
 # Attach the custom session to a client

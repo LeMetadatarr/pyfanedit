@@ -41,8 +41,10 @@ class Session:
         return text
 
     def _cache_put(self, key: _CacheKey, text: str) -> None:
+        if not self.cache_size:
+            return
         with self._lock:
-            if len(self._cache) >= self.cache_size:
+            if len(self._cache) >= self.cache_size and self._cache:
                 oldest = min(self._cache.items(), key=lambda kv: kv[1][0])[0]
                 self._cache.pop(oldest, None)
             self._cache[key] = (time.time(), text)
