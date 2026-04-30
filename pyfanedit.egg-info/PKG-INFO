@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: pyfanedit
+Version: 0.1.0
+Summary: Scraping client for fanedit.org IFDB
+Author-email: JarbasAi <jarbasai@mailfence.com>
+License: Apache-2.0
+Project-URL: Homepage, https://github.com/OpenJarbas/pyfanedit
+Requires-Python: >=3.8
+Requires-Dist: beautifulsoup4
+Requires-Dist: curl_cffi
+Requires-Dist: pydantic>=2.0
+Provides-Extra: test
+Requires-Dist: pytest; extra == "test"
