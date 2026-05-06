@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+
+**mediavocab integration:**
+
+- `mediavocab>=0.1.0` declared as a hard runtime dep (was implicitly
+  used by `converters.fanedit_to_release`).
+- `fanedit_to_release()` now sets `Work.variant_kind` and
+  `Release.variant_kind` from the upstream `fanedit_type` raw value;
+  per mediavocab spec axiom 12, a `MOVIE_TO_TV` fanedit produces a
+  `MediaType.EPISODIC_SERIES` Work (everything else stays MOVIE).
+- Sub-types intentionally absent from the foundation `VariantKind`
+  enum (`fanfix`, `fanmix`, `fanedit_short`) surface as a free-text
+  `fanedit_subtype` tag in `Work.extra` per spec §4.2.
+- New offline test suite (`tests/test_converter.py`, 21 cases) covering
+  the type→variant_kind/media_type/subtype map, faneditor credit, year
+  extraction, and FaneditDetail field promotions.
+
+# Changelog
+
 ## [0.1.1a2](https://github.com/TigreGotico/pyfanedit/tree/0.1.1a2) (2026-04-30)
 
 [Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.1.1a1...0.1.1a2)

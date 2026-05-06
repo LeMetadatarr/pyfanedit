@@ -180,15 +180,50 @@ class FaneditClient:
     # Detail
     # ------------------------------------------------------------------
 
+    def search_by_original_title(
+        self,
+        title: str,
+        *,
+        order: str = "rdate",
+    ) -> List[FaneditSummary]:
+        """Return all fanedits whose ``original_title`` matches ``title`` exactly.
+
+        Uses an exact-phrase search then filters by ``original_title`` so that
+        e.g. ``"Alien"`` doesn't also return ``"Aliens"`` fanedits.
+
+        This is the recommended way to look up fanedits for a specific film
+        when you don't have an IMDb id.  The ``original_title`` field is
+        populated on every listing-page result and is more reliable than the
+        fanedit title itself.
+        """
+        items, _ = self.search(title, scope="title", query_type="exact", order=order)
+        lower = title.strip().lower()
+        return [
+            it for it in items
+            if it.original_title and it.original_title.strip().lower() == lower
+        ]
+
     def get_detail(self, url: str) -> FaneditDetail:
         """Fetch and parse a single fanedit detail page.
 
         ``url`` may be a full URL or a slug like ``/star-wars-despecialized/``.
+        The returned :class:`FaneditDetail` includes ``fanedit_id`` (the
+        WordPress post ID) extracted from the page body classes.
         """
         if not url.startswith("http"):
             url = "https://fanedit.org/" + url.strip("/") + "/"
         html = self._s.get(url)
         return parse_detail_page(html, url)
+
+    def get_detail_by_slug(self, slug: str) -> FaneditDetail:
+        """Convenience wrapper: fetch a detail page by slug.
+
+        ``slug`` is the last path component of the IFDB URL, e.g.
+        ``"star-wars-despecialized"``.  Equivalent to
+        ``get_detail("https://fanedit.org/{slug}/")``.
+        """
+        return self.get_detail(f"https://fanedit.org/{slug.strip('/')}/")
+
 
     # ------------------------------------------------------------------
     # Reviewer leaderboard
