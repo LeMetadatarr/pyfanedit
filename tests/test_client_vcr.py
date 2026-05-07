@@ -53,16 +53,10 @@ def test_get_reviewer_rank(cassette_session):
     assert all(isinstance(i, ReviewerEntry) for i in items)
 
 
-@pytest.mark.xfail(
-    reason="parse_listing_page returns [] on /latest-user-reviews/ — "
-           "page uses a different markup; tracked as parser gap. The "
-           "cassette is still recorded so the test flips to pass once "
-           "the parser is fixed.",
-    strict=False,
-)
 def test_get_latest_user_reviews(cassette_session):
     items, _next = FaneditClient().get_latest_user_reviews(page=1)
     assert items
+    assert all(isinstance(i, FaneditSummary) for i in items)
 
 
 def test_get_news_listing(cassette_session):
