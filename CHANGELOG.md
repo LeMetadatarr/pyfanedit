@@ -1,48 +1,12 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.0a1](https://github.com/TigreGotico/pyfanedit/tree/0.2.0a1) (2026-05-07)
 
-**mediavocab integration:**
-
-- `mediavocab>=0.1.0` declared as a hard runtime dep (was implicitly
-  used by `converters.fanedit_to_release`).
-- `fanedit_to_release()` now sets `Work.variant_kind` and
-  `Release.variant_kind` from the upstream `fanedit_type` raw value;
-  per mediavocab spec axiom 12, a `MOVIE_TO_TV` fanedit produces a
-  `MediaType.EPISODIC_SERIES` Work (everything else stays MOVIE).
-- Sub-types intentionally absent from the foundation `VariantKind`
-  enum (`fanfix`, `fanmix`, `fanedit_short`) surface as a free-text
-  `fanedit_subtype` tag in `Work.extra` per spec §4.2.
-- New offline test suite (`tests/test_converter.py`, 21 cases) covering
-  the type→variant_kind/media_type/subtype map, faneditor credit, year
-  extraction, and FaneditDetail field promotions.
-
-### Added (richer Work / Release fields)
-
-- `Work.runtime` populated from the FanEdit detail page.
-- `Work.edition` and `Work.source_format` parsed out of the detail metadata so consumers can tell e.g. an extended cut sourced from a Blu-ray apart from a theatrical-cut DVD source.
-- `Work.content_genres` mapped from FanEdit categories.
-- `Release.resolution`, `Release.hdr` and `Release.audio_channels` derived from the `available_in` field (e.g. `1080p HDR 5.1`).
-- `WorkRelation(FANEDIT_OF)` now correctly links the fanedit `Work` to its source film.
-
-### Fixed
-
-- `derived_from_imdb` is the proper Work-level reference to the source film; previously the IMDb id was being mis-stamped on `imdb_id` (which is reserved for the fanedit's own external IDs).
-- Faneditor credit now uses `RelationRole.EDITOR` instead of `CREATOR`, matching the mediavocab semantic for re-cuts.
-
-# Changelog
-
-## [0.1.1a2](https://github.com/TigreGotico/pyfanedit/tree/0.1.1a2) (2026-04-30)
-
-[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.1.1a1...0.1.1a2)
+[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.1.1...0.2.0a1)
 
 **Merged pull requests:**
 
-- chore: Configure Renovate [\#1](https://github.com/TigreGotico/pyfanedit/pull/1) ([renovate[bot]](https://github.com/apps/renovate))
-
-## [0.1.1a1](https://github.com/TigreGotico/pyfanedit/tree/0.1.1a1) (2026-04-30)
-
-[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0eaed2979f0d18c1d69e3dbd5f60eb82ed5bd707...0.1.1a1)
+- feat: variant-aware fanedit\_to\_release + tests [\#4](https://github.com/TigreGotico/pyfanedit/pull/4) ([JarbasAl](https://github.com/JarbasAl))
 
 
 
