@@ -1,49 +1,15 @@
 # pyfanedit
 
-Python scraping client for [fanedit.org](https://fanedit.org) (IFDB — the Internet Fanedit Database).
+Python scraping client for [fanedit.org](https://fanedit.org) (IFDB — the Internet Fanedit Database). Covers search, browsing, detail pages, reviewer leaderboards, news, and mediavocab export.
 
 ## Install
 
 ```bash
-pip install pyfanedit            # plain `requests` transport (likely blocked)
-pip install pyfanedit[stealth]   # recommended — adds curl_cffi
+pip install pyfanedit            # plain requests — will warn and likely be blocked
+pip install pyfanedit[stealth]   # recommended — adds curl_cffi for TLS bypass
 ```
 
-### HTTP transport
-
-fanedit.org is heavily defended against scraping (TLS fingerprint and UA
-heuristics), so `pyfanedit` prefers [`curl_cffi`](https://pypi.org/project/curl-cffi/)
-to impersonate a real browser. It is now an **optional** dependency,
-installed via the `[stealth]` extra. Without it `pyfanedit` falls back to
-plain `requests` and emits a `RuntimeWarning` — most requests will be
-blocked by Cloudflare in that mode.
-
-You can pin the transport with the `PYFANEDIT_TRANSPORT` env var:
-
-```bash
-PYFANEDIT_TRANSPORT=curl_cffi   # explicit (default if available)
-PYFANEDIT_TRANSPORT=requests    # force plain requests (warns)
-```
-
-You can also inject your own session — useful for tests, alt
-impersonation profiles, or sharing a session across clients:
-
-```python
-from pyfanedit import FaneditClient
-from pyfanedit.session import Session
-
-# Custom impersonation profile (curl_cffi only)
-client = FaneditClient(impersonate="chrome131")
-
-# Custom factory
-import requests
-client = FaneditClient(session_factory=lambda **_: requests.Session())
-
-# Pre-built Session (e.g. shared cache)
-shared = Session(cache_ttl=900)
-client = FaneditClient(session=shared)
-```
-
+fanedit.org uses TLS fingerprinting and Cloudflare heuristics. Without `[stealth]`, pyfanedit falls back to plain `requests` and emits a `RuntimeWarning` on every request. Most requests will be blocked.
 
 ## Quick Start
 
@@ -51,24 +17,109 @@ client = FaneditClient(session=shared)
 from pyfanedit import FaneditClient
 
 client = FaneditClient()
-results, _ = client.search("star wars")
+
+# search by keyword
+results, _ = client.search("blade runner")
+for r in results:
+    print(r.title, r.faneditor, r.user_rating)
+
+# fetch full detail
 detail = client.get_detail(results[0].url)
-print(detail.title, detail.imdb_id, detail.time_cut)
+print(detail.imdb_id, detail.genre, detail.time_cut)
 ```
 
-## Typed `mediavocab.Release` output
+## Transport
 
-`pyfanedit` ships a converter that turns scraped fanedits into typed
-[`mediavocab.Release`](https://github.com/JarbasAl/mediavocab) objects so
-they slot into the same vocabulary as every other media provider:
+`PYFANEDIT_TRANSPORT` overrides auto-detection:
+
+```bash
+PYFANEDIT_TRANSPORT=curl_cffi   # explicit (default when curl_cffi is installed)
+PYFANEDIT_TRANSPORT=requests    # force plain requests (warns)
+```
+
+Session injection — for tests, shared caches, or alternate profiles:
+
+```python
+import requests
+from pyfanedit import FaneditClient
+from pyfanedit.session import Session
+
+# custom curl_cffi impersonation profile
+client = FaneditClient(impersonate="chrome131")
+
+# inject a plain requests.Session (e.g. for unit tests)
+client = FaneditClient(session_factory=lambda **_: requests.Session())
+
+# pre-built Session shared across clients
+shared = Session(cache_ttl=900)
+client = FaneditClient(session=shared)
+```
+
+## Public API
+
+`FaneditClient` — `pyfanedit/client.py:34`
+
+### Curated lists
+
+| Method | Returns |
+|---|---|
+| `get_latest(page)` | Most recently added edits |
+| `get_top_trusted_rated(page)` | Highest rated by trusted reviewers |
+| `get_top_user_rated(page)` | Highest rated by all users |
+| `get_most_popular(page)` | Most viewed |
+| `get_award_winners(page)` | Fanedit of the Month winners |
+
+All return `(list[FaneditSummary], next_url | None)`.
+
+### Search and tag browsing
+
+| Method | Signature |
+|---|---|
+| `search(keywords, scope, query_type, order, page)` | Keyword search — `pyfanedit/client.py:99` |
+| `iter_search(keywords, ...)` | Paginating generator — `pyfanedit/client.py:131` |
+| `search_by_original_title(title, order)` | Exact match on source film title — `pyfanedit/client.py:209` |
+| `get_by_tag(tag_type, tag_value, page)` | Browse by franchise, editor name, year, award, … — `pyfanedit/client.py:153` |
+| `iter_by_tag(tag_type, tag_value, max_pages)` | Paginating generator — `pyfanedit/client.py:171` |
+| `get_category(category, page)` | Named category (`fanfix`, `extended`, `tv_to_movie`, …) — `pyfanedit/client.py:70` |
+| `iter_category(category, max_pages)` | Paginating generator — `pyfanedit/client.py:85` |
+
+`ORDER_CHOICES`: `rdate` (default), `date`, `modified`, `alpha`, `rratio`, `rvote`.
+
+### Detail
+
+| Method | Signature |
+|---|---|
+| `get_detail(url)` | Full page by URL or slug — `pyfanedit/client.py:232` |
+| `get_detail_by_slug(slug)` | Convenience wrapper — `pyfanedit/client.py:244` |
+
+### Reviews and reviewer leaderboard
+
+| Method | Signature |
+|---|---|
+| `get_reviewer_rank(page)` | Leaderboard, ~50 entries/page — `pyfanedit/client.py:258` |
+| `iter_reviewer_rank(max_pages)` | Paginating generator — `pyfanedit/client.py:267` |
+| `get_user_reviews(user_id, page, order)` | All reviews by one user — `pyfanedit/client.py:296` |
+| `iter_user_reviews(user_id, order, max_pages)` | Paginating generator — `pyfanedit/client.py:318` |
+| `get_latest_user_reviews(page)` | Latest-reviews feed (all users) — `pyfanedit/client.py:327` |
+| `get_latest_trusted_reviews(page)` | Latest trusted-reviewer feed — `pyfanedit/client.py:332` |
+
+`REVIEW_ORDER_CHOICES`: `rdate`, `date`, `rating`, `rrating`, `updated`, `helpful`, `rhelpful`, `discussed`.
+
+### News
+
+| Method | Signature |
+|---|---|
+| `get_news()` | Front-page article cards (~15) — `pyfanedit/client.py:341` |
+| `get_news_article(url)` | Full article body + mentioned fanedit URLs — `pyfanedit/client.py:347` |
+
+## mediavocab integration
+
+`fanedit_to_release` — `pyfanedit/converters.py:166` — converts a `FaneditSummary` or `FaneditDetail` to a typed `mediavocab.Release`:
 
 ```python
 from pyfanedit import FaneditClient, fanedit_to_release
-from mediavocab import VariantKind, MediaType, RelationRole, WorkRelationKind
 
 client = FaneditClient()
-
-# Look up every fanedit of a specific film by exact original-title match.
 summaries = client.search_by_original_title("Star Wars")
 
 for summary in summaries[:3]:
@@ -76,55 +127,32 @@ for summary in summaries[:3]:
     release = fanedit_to_release(detail)
     work = release.work
 
-    # Typed mediavocab fields populated from IFDB free-text:
-    #   work.runtime         — seconds, parsed from "Fanedit Running Time"
-    #   work.edition         — lifted from titles like "...: Director's Cut"
-    #   work.source_format   — normalised from "Release Information"
-    #                          (BD-25, WEB-DL, DVD, …)
-    #   work.content_genres  — inherited from the source movie's tags
-    #   work.variant_kind    — FANEDIT / EXTENDED / TV_TO_MOVIE / …
-    #   release.resolution / release.hdr / release.audio_channels
-    #                        — lifted from "Available In" when present
-    #   release.release_date — parsed by mediavocab's IsoDate validator
-
-    # The faneditor is the recut's EDITOR (not the source film's CREATOR).
-    for credit in work.credits:
-        if credit.relation_role is RelationRole.EDITOR:
-            print("editor:", credit.entity.name)
-
-    # Source IMDb id stored as `derived_from_imdb` (the fanedit itself has
-    # no IMDb listing — its source movie does).
-    print(work.external_ids.get("derived_from_imdb"))
-
-    # mediavocab's `Work` has no first-class `relations` field, so the
-    # FANEDIT_OF backlink to the source Work is serialised into
-    # `work.extra["work_relations"]`. Round-trip with `WorkRelation(**rel)`.
-    for rel in work.extra.get("work_relations", []):
-        if rel.get("kind") == WorkRelationKind.FANEDIT_OF.value:
-            print("source:", rel["target"]["title"])
+    print(work.title, work.variant_kind, work.runtime)
+    print(work.external_ids.get("derived_from_imdb"))  # source IMDb id
 ```
 
-`MOVIE_TO_TV` re-cuts produce a Work with `media_type=EPISODIC_SERIES`
-per the mediavocab "one Work, one MediaType" axiom.
+Key mappings:
 
-## Features
+| IFDB field | mediavocab destination |
+|---|---|
+| `faneditor` | `Work.credits` — `RelationRole.EDITOR` |
+| `fanedit_type` | `Work.variant_kind` (`FANEDIT` / `EXTENDED` / `TV_TO_MOVIE` / `MOVIE_TO_TV` / `PRESERVATION`) |
+| `fanedit_running_time` | `Work.runtime` (seconds) |
+| `release_information` | `Work.source_format` (e.g. `BD-25`, `WEB-DL`) |
+| `available_in` | `Release.resolution`, `Release.hdr`, `Release.audio_channels` |
+| `imdb_id` | `Work.external_ids["derived_from_imdb"]` |
+| Source film backlink | `Work.extra["work_relations"]` — `WorkRelation(kind=FANEDIT_OF, target=<source Work>)` |
 
-- Search the IFDB by keyword, scope, and sort order
-- Browse named categories (`fanfix`, `fanmix`, `extended`, `tv_to_movie`, and more)
-- Browse by franchise, editor name, release year, or any other tag
-- Curated lists: latest, top trusted-reviewer rated, top user rated, most popular, award winners
-- Full detail pages: genre, cuts, intention, IMDB ID, editor and user reviews
-- **Reviewer leaderboard** — paginated list of top reviewers with helpful-vote stats
-- **Reviews by user** — all reviews written by a specific user, with eight sort orders
-- **News** — front-page article cards and full article bodies with linked IFDB URLs
-- In-process LRU cache with configurable TTL; thread-safe
+`MOVIE_TO_TV` recuts produce `MediaType.EPISODIC_SERIES` per the mediavocab "one Work, one MediaType" axiom.
 
 ## Documentation
 
-- [Quick Start](docs/quickstart.md)
-- [API Reference](docs/reference.md)
-- [IDs, IMDB Mapping, and Metadata](docs/ids-and-metadata.md)
-- [Advanced Usage](docs/advanced.md)
+- [Getting Started](docs/getting-started.md)
+- [FaneditClient Reference](docs/reference.md)
+- [Models](docs/models.md)
+- [Transport and Session Injection](docs/transport.md)
+- [mediavocab Converter](docs/converter.md)
+- [IDs and Metadata](docs/ids-and-metadata.md)
 
 ## License
 
