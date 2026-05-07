@@ -139,7 +139,12 @@ def test_invalid_release_date_yields_no_year():
 # FaneditDetail-only fields
 # ---------------------------------------------------------------------------
 
-def test_detail_imdb_id_promoted_to_external_ids():
+def test_detail_imdb_id_promoted_to_derived_from_imdb():
+    """The fanedit Work itself has no IMDb id — its *source* movie does.
+
+    Per mediavocab ExternalIds.derived_from_imdb: "parent IMDb tt-id when
+    this record IS a variant".
+    """
     detail = FaneditDetail(
         fanedit_id=2,
         title="Example",
@@ -147,7 +152,38 @@ def test_detail_imdb_id_promoted_to_external_ids():
         imdb_id="tt0123456",
     )
     rel = fanedit_to_release(detail)
-    assert rel.work.external_ids["imdb_id"] == "tt0123456"
+    assert rel.work.external_ids["derived_from_imdb"] == "tt0123456"
+    # Legacy "imdb_id" key must NOT be set — that would imply the fanedit
+    # has its own IMDb listing.
+    assert "imdb_id" not in rel.work.external_ids
+
+
+def test_detail_imdb_id_emits_fanedit_of_work_relation():
+    """Spec: a fanedit Work links back to its source Work via FANEDIT_OF."""
+    from mediavocab import WorkRelationKind
+
+    detail = FaneditDetail(
+        fanedit_id=2,
+        title="Star Wars: Despecialized",
+        original_title="Star Wars",
+        url="https://x",
+        imdb_id="tt0076759",
+        fanedit_type="preservation",
+    )
+    rel = fanedit_to_release(detail)
+    relations = rel.work.extra.get("work_relations") or []
+    assert len(relations) == 1
+    relation = relations[0]
+    assert relation["kind"] == WorkRelationKind.FANEDIT_OF.value
+    assert relation["target"]["external_ids"]["imdb"] == "tt0076759"
+    assert relation["target"]["title"] == "Star Wars"
+
+
+def test_no_imdb_id_no_work_relation():
+    """Without a known source IMDb id we don't fabricate a FANEDIT_OF link."""
+    detail = FaneditDetail(fanedit_id=3, title="x", url="https://x")
+    rel = fanedit_to_release(detail)
+    assert "work_relations" not in rel.work.extra
 
 
 def test_detail_franchise_and_genre_in_extra():

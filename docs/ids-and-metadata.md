@@ -181,6 +181,39 @@ debugging missing data.
 
 ---
 
+## mediavocab mapping (`fanedit_to_release`)
+
+`pyfanedit.fanedit_to_release()` converts a `FaneditSummary` or
+`FaneditDetail` to a typed `mediavocab.Release`. Mapping summary:
+
+| pyfanedit field           | mediavocab destination                                     |
+|---------------------------|------------------------------------------------------------|
+| `title`                   | `Release.work.title`                                       |
+| `cover_url`               | `Release.image`                                            |
+| `url`                     | `Release.uri`                                              |
+| `faneditor`               | `Release.work.credits[0]` (`role="editor"`, `RelationRole.CREATOR`) |
+| `fanedit_type`            | `Release.work.variant_kind` (+ `extra["fanedit_subtype"]`) |
+| `fanedit_id`              | `Release.work.external_ids["fanedit_id"]`                  |
+| `slug`                    | `Release.work.external_ids["fanedit_slug"]`                |
+| `imdb_id` (detail)        | `Release.work.external_ids["derived_from_imdb"]`           |
+| `imdb_id` (detail)        | `Work.extra["work_relations"]` → `WorkRelation(kind=FANEDIT_OF, target=<source Work>)` |
+| `release_date` / `fanedit_release_date` | `Release.release_date` (ISO 8601), `Work.year` |
+| `franchise`, `genre`, `intention`, `synopsis`, `editor_rating`, `user_rating` | `Work.extra` |
+
+Notes:
+
+- The fanedit `Work` itself never holds an IMDb id under `external_ids["imdb"]`
+  — fanedits don't have IMDb listings. The source film's id lives in
+  `derived_from_imdb` per mediavocab convention.
+- `MediaType.MOVIE` for every variant *except* `MOVIE_TO_TV`, which produces
+  `MediaType.EPISODIC_SERIES` per the "one Work, one MediaType" axiom.
+- Trailers / behind-the-scenes are routed to `MediaType.GENERIC` upstream;
+  fanedits stay `MediaType.MOVIE`.
+- `PlaybackModality.VIDEO` is recorded on `Work.extra["modality"]`. The
+  metadatarr pyfanedit provider declares `modality = {PlaybackModality.VIDEO}`.
+
+---
+
 ## See also
 
 - [API Reference](reference.md)
