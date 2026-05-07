@@ -13,8 +13,6 @@ cassette drift surfaces within 24h.
 """
 from __future__ import annotations
 
-import pytest
-
 from pyfanedit.client import FaneditClient
 from pyfanedit.models import (
     FaneditDetail, FaneditSummary, NewsArticle, ReviewerEntry,

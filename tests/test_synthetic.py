@@ -7,7 +7,7 @@ session at the response level to cover ``pyfanedit.session.Session``.
 """
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -17,9 +17,7 @@ from pyfanedit import (
     FaneditDetail,
     FaneditSummary,
     NewsArticle,
-    Review,
     ReviewerEntry,
-    ReviewRatings,
     UserReviewEntry,
     fanedit_to_release,
 )
