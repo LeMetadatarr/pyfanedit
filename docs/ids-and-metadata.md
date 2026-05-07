@@ -181,6 +181,51 @@ debugging missing data.
 
 ---
 
+## mediavocab mapping (`fanedit_to_release`)
+
+`pyfanedit.fanedit_to_release()` converts a `FaneditSummary` or
+`FaneditDetail` to a typed `mediavocab.Release`. Mapping summary:
+
+| pyfanedit field           | mediavocab destination                                     |
+|---------------------------|------------------------------------------------------------|
+| `title`                   | `Release.work.title` (+ `Work.edition` / `Release.edition` when title carries "Director's Cut" / "Final Cut" / "<Foo> Edition" / "Recut" / "Redux") |
+| `cover_url`               | `Release.image`                                            |
+| `url`                     | `Release.uri`                                              |
+| `faneditor`               | `Release.work.credits[0]` (`role="editor"`, `RelationRole.EDITOR`) |
+| `fanedit_type`            | `Release.work.variant_kind` (+ `extra["fanedit_subtype"]`) |
+| `fanedit_id`              | `Release.work.external_ids["fanedit_id"]`                  |
+| `slug`                    | `Release.work.external_ids["fanedit_slug"]`                |
+| `imdb_id` (detail)        | `Release.work.external_ids["derived_from_imdb"]`           |
+| `imdb_id` (detail)        | `Work.extra["work_relations"]` → `WorkRelation(kind=FANEDIT_OF, target=<source Work>)` |
+| `fanedit_running_time` / `running_time` | `Work.runtime` (seconds; `"1h 45m"` / `"105 min"` / `"105"` accepted) |
+| `release_information`     | `Work.source_format` (normalised: `BD-25`, `WEB-DL`, `DVD`, `UHD Blu-ray`, `VHS`, …) |
+| `available_in`            | `Release.resolution` (`720p` / `1080p` / `2160p` / …), `Release.hdr` (`HDR10` / `Dolby Vision` / …), `Release.audio_channels` (`5.1` / `stereo` / …) |
+| `genre` (detail)          | `Work.content_genres` (typed; also kept in `extra["genres"]` for legacy round-trip) |
+| `release_date` / `fanedit_release_date` | `Release.release_date` (ISO 8601 — parsed by mediavocab's `IsoDate`), `Work.year` |
+| `franchise`, `intention`, `synopsis`, `editor_rating`, `user_rating` | `Work.extra` |
+
+Notes:
+
+- The faneditor is recorded as `RelationRole.EDITOR`, not `CREATOR`. The
+  source film's director is the creator; the faneditor is the recut's editor.
+- The fanedit `Work` itself never holds an IMDb id under `external_ids["imdb"]`
+  — fanedits don't have IMDb listings. The source film's id lives in
+  `derived_from_imdb` per mediavocab convention.
+- `mediavocab.Work` has no first-class `relations` field, so the
+  `WorkRelation(kind=FANEDIT_OF, ...)` lineage is serialised into
+  `Work.extra["work_relations"]` (a list of relation dicts). Round-trip via
+  `WorkRelation(**rel_dict)`.
+- `MediaType.MOVIE` for every variant *except* `MOVIE_TO_TV`, which produces
+  `MediaType.EPISODIC_SERIES` per the "one Work, one MediaType" axiom.
+- Free-text parsing for `available_in` / `release_information` /
+  `fanedit_running_time` is conservative: when no marker is recognised the
+  field stays at mediavocab's default (`""` / `None`) rather than being
+  guessed.
+- `PlaybackModality.VIDEO` is recorded on `Work.extra["modality"]`. The
+  metadatarr pyfanedit provider declares `modality = {PlaybackModality.VIDEO}`.
+
+---
+
 ## See also
 
 - [API Reference](reference.md)

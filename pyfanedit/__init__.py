@@ -1,4 +1,5 @@
 from pyfanedit.client import CATEGORIES, FaneditClient
+from pyfanedit.converters import fanedit_to_release
 from pyfanedit.models import (
     FaneditDetail, FaneditSummary,
     NewsArticle, Review, ReviewRatings,
@@ -17,4 +18,5 @@ __all__ = [
     "Review",
     "ReviewRatings",
     "CATEGORIES",
+    "fanedit_to_release",
 ]

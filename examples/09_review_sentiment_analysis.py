@@ -7,6 +7,7 @@ Shows: get_top_trusted_rated(), get_detail() reviews, dimension statistics.
 No external libraries needed — pure stdlib math.
 """
 import statistics
+from collections import defaultdict
 
 from pyfanedit import FaneditClient
 
@@ -66,7 +67,6 @@ for dim, scores in dimension_scores.items():
 
 # Per-fanedit: which dimension scores lowest on average?
 print("\nPer-fanedit weakest dimension:")
-from collections import defaultdict
 by_fanedit: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
 for row in records:
     for dim in dimension_scores:

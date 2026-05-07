@@ -9,10 +9,13 @@ description = "Scraping client for fanedit.org IFDB"
 license = { text = "Apache-2.0" }
 authors = [{ name = "JarbasAi", email = "jarbasai@mailfence.com" }]
 requires-python = ">=3.8"
-dependencies = ["beautifulsoup4", "curl_cffi", "pydantic>=2.0"]
+dependencies = ["beautifulsoup4", "requests", "pydantic>=2.0", "mediavocab>=0.1.0"]
 
 [project.optional-dependencies]
-test = ["pytest"]
+stealth = ["curl_cffi"]
+test = ["pytest", "curl_cffi"]
+# Note: cassette-backed scraper tests are file-driven (curl_cffi is not
+# vcrpy-compatible). See tests/conftest.py for the cassette protocol.
 
 [project.urls]
 Homepage = "https://github.com/OpenJarbas/pyfanedit"

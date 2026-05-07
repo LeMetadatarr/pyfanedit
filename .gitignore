@@ -24,3 +24,8 @@ htmlcov/
 # Misc
 *.log
 .DS_Store
+pyfanedit/__pycache__/
+pyfanedit.egg-info/
+tests/__pycache__/
+fanfix_edits.jsonl
+watchlist_state.json

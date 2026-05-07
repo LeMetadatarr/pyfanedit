@@ -1,0 +1,32 @@
+name: nightly-live
+
+# Re-runs the cassette-backed parser tests in record mode against the
+# real fanedit.org endpoints, so silent upstream HTML drift surfaces
+# within 24h instead of when a downstream user notices empty results.
+#
+# Cassettes are NOT committed back — this job is detect-only. A failure
+# here means the cassettes need re-recording locally.
+
+on:
+  schedule:
+    - cron: "17 4 * * *"   # 04:17 UTC daily
+  workflow_dispatch:
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[test]
+      - name: Run cassette tests against live endpoints
+        env:
+          PYFANEDIT_RECORD: "1"
+        run: |
+          pytest -q tests/ -k "_vcr"

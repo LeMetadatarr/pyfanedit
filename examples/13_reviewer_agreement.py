@@ -5,6 +5,7 @@ Find fanedits reviewed by multiple top-10 reviewers and compare their scores.
 Shows: iter_reviewer_rank(), iter_user_reviews(), cross-referencing reviews
 across reviewers by fanedit URL.
 """
+import statistics
 from collections import defaultdict
 
 from pyfanedit import FaneditClient
@@ -36,8 +37,6 @@ multi_rated = {
 }
 
 print(f"\nFanedits rated by 3+ of the top {TOP_N} reviewers: {len(multi_rated)}\n")
-
-import statistics
 
 rows = []
 for url, ratings in multi_rated.items():

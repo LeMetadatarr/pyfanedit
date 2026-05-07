@@ -6,7 +6,6 @@ Shows: iter_category("preservation"), get_detail() for IMDB IDs,
 CSV export for use in spreadsheets.
 """
 import csv
-import sys
 
 from pyfanedit import FaneditClient
 
