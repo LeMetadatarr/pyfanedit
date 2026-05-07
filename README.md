@@ -5,8 +5,45 @@ Python scraping client for [fanedit.org](https://fanedit.org) (IFDB — the Inte
 ## Install
 
 ```bash
-pip install pyfanedit
+pip install pyfanedit            # plain `requests` transport (likely blocked)
+pip install pyfanedit[stealth]   # recommended — adds curl_cffi
 ```
+
+### HTTP transport
+
+fanedit.org is heavily defended against scraping (TLS fingerprint and UA
+heuristics), so `pyfanedit` prefers [`curl_cffi`](https://pypi.org/project/curl-cffi/)
+to impersonate a real browser. It is now an **optional** dependency,
+installed via the `[stealth]` extra. Without it `pyfanedit` falls back to
+plain `requests` and emits a `RuntimeWarning` — most requests will be
+blocked by Cloudflare in that mode.
+
+You can pin the transport with the `PYFANEDIT_TRANSPORT` env var:
+
+```bash
+PYFANEDIT_TRANSPORT=curl_cffi   # explicit (default if available)
+PYFANEDIT_TRANSPORT=requests    # force plain requests (warns)
+```
+
+You can also inject your own session — useful for tests, alt
+impersonation profiles, or sharing a session across clients:
+
+```python
+from pyfanedit import FaneditClient
+from pyfanedit.session import Session
+
+# Custom impersonation profile (curl_cffi only)
+client = FaneditClient(impersonate="chrome131")
+
+# Custom factory
+import requests
+client = FaneditClient(session_factory=lambda **_: requests.Session())
+
+# Pre-built Session (e.g. shared cache)
+shared = Session(cache_ttl=900)
+client = FaneditClient(session=shared)
+```
+
 
 ## Quick Start
 

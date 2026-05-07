@@ -34,8 +34,34 @@ ORDER_CHOICES = ("rdate", "date", "modified", "alpha", "rratio", "rvote")
 class FaneditClient:
     """Scraping client for fanedit.org / IFDB."""
 
-    def __init__(self, impersonate: str = "chrome120", cache_ttl: float = 300.0) -> None:
-        self._s = Session(impersonate=impersonate, cache_ttl=cache_ttl)
+    def __init__(
+        self,
+        impersonate: str = "chrome120",
+        cache_ttl: float = 300.0,
+        session: Optional["Session"] = None,
+        session_factory=None,
+    ) -> None:
+        """Create a fanedit.org client.
+
+        Args:
+            impersonate: curl_cffi browser fingerprint (ignored for plain
+                ``requests`` transport).
+            cache_ttl: per-URL cache TTL in seconds.
+            session: pre-built :class:`Session` instance to use directly
+                (e.g. for testing or when sharing a session across clients).
+                When provided, ``impersonate`` and ``cache_ttl`` are ignored.
+            session_factory: optional callable returning the underlying
+                HTTP session (e.g. ``curl_cffi.requests.Session`` or
+                ``requests.Session``). Forwarded to :class:`Session`.
+        """
+        if session is not None:
+            self._s = session
+        else:
+            self._s = Session(
+                impersonate=impersonate,
+                cache_ttl=cache_ttl,
+                session_factory=session_factory,
+            )
 
     # ------------------------------------------------------------------
     # Category browsing
