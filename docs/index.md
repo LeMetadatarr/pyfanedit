@@ -4,50 +4,27 @@ Python scraping client for [fanedit.org](https://fanedit.org) (IFDB — the Inte
 
 ## Overview
 
-fanedit.org hosts the IFDB, a community-curated catalogue of fan-edited films and TV shows. Entries
-cover cut-downs, extended editions, TV-to-movie conversions, preservations, and more. The site has no
-public API, so pyfanedit scrapes HTML pages using `curl_cffi` (for TLS fingerprint bypass) and
-`BeautifulSoup`, then returns structured Pydantic models.
-
-## Quick Install
-
-```bash
-pip install pyfanedit
-```
-
-## Hello World
-
-```python
-from pyfanedit import FaneditClient
-
-client = FaneditClient()
-results, _ = client.search("star wars")
-for r in results[:3]:
-    print(r.title, "|", r.faneditor, "|", r.user_rating)
-```
+fanedit.org hosts a community-curated catalogue of fan-edited films and TV shows. The site has no public API; pyfanedit scrapes HTML with `curl_cffi` (TLS fingerprint bypass) and `BeautifulSoup`, returning typed Pydantic models.
 
 ## Key Classes
 
 | Class | Purpose | Source |
 |---|---|---|
-| `FaneditClient` | All user-facing methods (search, browse, detail, reviewers, news) | `pyfanedit/client.py:27` |
+| `FaneditClient` | All user-facing methods | `pyfanedit/client.py:34` |
 | `FaneditSummary` | Lightweight record from listing/search pages | `pyfanedit/models.py:28` |
-| `FaneditDetail` | Full record from a single fanedit page | `pyfanedit/models.py:51` |
-| `Review` | One user or editor review embedded in a detail page | `pyfanedit/models.py:15` |
+| `FaneditDetail` | Full record from a single fanedit detail page | `pyfanedit/models.py:51` |
+| `Review` | One editor or user review embedded in a detail page | `pyfanedit/models.py:15` |
 | `ReviewRatings` | Per-dimension ratings inside a review | `pyfanedit/models.py:6` |
 | `ReviewerEntry` | One row from the reviewer leaderboard | `pyfanedit/models.py:101` |
 | `UserReviewEntry` | One review from a user's review list page | `pyfanedit/models.py:113` |
-| `NewsArticle` | A news article card or full article with body text | `pyfanedit/models.py:124` |
-| `Session` | HTTP layer with caching and TLS impersonation | `pyfanedit/session.py:14` |
+| `NewsArticle` | News article card or full article body | `pyfanedit/models.py:124` |
+| `Session` | HTTP layer: caching, TLS impersonation | `pyfanedit/session.py:74` |
 
 ## Contents
 
-- [Quick Start](quickstart.md) — install, first search, pagination, common pitfalls
-- [API Reference](reference.md) — every method and every model field
-- [IDs, IMDB Mapping, and Metadata](ids-and-metadata.md) — identifier types and field availability matrix
-- [Advanced Usage](advanced.md) — custom sessions, bulk export, reviewer feeds, news integration, extending the parser
-
-## See also
-
-- [fanedit.org](https://fanedit.org)
-- [GitHub repository](https://github.com/OpenJarbas/pyfanedit)
+- [Getting Started](getting-started.md) — install, first search, pagination, pitfalls
+- [FaneditClient Reference](reference.md) — all 16 methods grouped by function
+- [Models](models.md) — every model field with source annotations
+- [Transport and Session Injection](transport.md) — curl_cffi, PYFANEDIT_TRANSPORT, custom sessions
+- [mediavocab Converter](converter.md) — `fanedit_to_release` shape and field mapping
+- [IDs and Metadata](ids-and-metadata.md) — slug / fanedit_id / imdb_id availability matrix
