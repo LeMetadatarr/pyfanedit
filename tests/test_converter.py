@@ -72,12 +72,16 @@ def test_missing_type_defaults_to_fanedit():
 # Faneditor credit
 # ---------------------------------------------------------------------------
 
-def test_faneditor_becomes_creator_credit():
+def test_faneditor_becomes_editor_credit():
+    """The faneditor IS the recut's editor; mediavocab has a typed
+    ``RelationRole.EDITOR`` for exactly this — using ``CREATOR`` would
+    erase the distinction between the source movie's director and the
+    fanedit's editor."""
     rel = fanedit_to_release(_summary(faneditor="Jane Editor"))
     assert len(rel.work.credits) == 1
     credit = rel.work.credits[0]
     assert credit.entity.name == "Jane Editor"
-    assert credit.relation_role == RelationRole.CREATOR
+    assert credit.relation_role == RelationRole.EDITOR
     assert credit.role == "editor"
 
 
@@ -204,3 +208,142 @@ def test_detail_franchise_and_genre_in_extra():
 def test_summary_synopsis_in_extra():
     rel = fanedit_to_release(_summary(synopsis="A re-edited masterpiece."))
     assert rel.work.extra["synopsis"] == "A re-edited masterpiece."
+
+
+# ---------------------------------------------------------------------------
+# Lifted technical metadata: runtime, source_format, available_in
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("text, expected_seconds", [
+    ("1h 45m", 6300.0),
+    ("2h", 7200.0),
+    ("105m", 6300.0),
+    ("105 min", 6300.0),
+    ("105", 6300.0),
+    ("", None),
+    (None, None),
+    ("garbage", None),
+])
+def test_runtime_parser(text, expected_seconds):
+    from pyfanedit.converters import _parse_runtime_seconds
+    assert _parse_runtime_seconds(text) == expected_seconds
+
+
+def test_runtime_lifted_from_summary():
+    rel = fanedit_to_release(_summary(running_time="1h 30m"))
+    assert rel.work.runtime == 5400.0
+
+
+def test_runtime_lifted_from_detail_fanedit_running_time():
+    detail = FaneditDetail(
+        fanedit_id=1,
+        title="Example",
+        url="https://x",
+        fanedit_running_time="2h 5m",
+    )
+    rel = fanedit_to_release(detail)
+    assert rel.work.runtime == 7500.0
+
+
+@pytest.mark.parametrize("text, fmt", [
+    ("from BD-25", "BD-25"),
+    ("Web-DL source", "WEB-DL"),
+    ("DVD master", "DVD"),
+    ("UHD Blu-ray remux", "UHD Blu-ray"),
+    ("digital download", ""),
+    (None, ""),
+])
+def test_source_format_parser(text, fmt):
+    from pyfanedit.converters import _parse_source_format
+    assert _parse_source_format(text) == fmt
+
+
+def test_source_format_lifted_to_work_from_release_information():
+    detail = FaneditDetail(
+        fanedit_id=1,
+        title="Example",
+        url="https://x",
+        release_information="from BD-25",
+    )
+    rel = fanedit_to_release(detail)
+    assert rel.work.source_format == "BD-25"
+
+
+@pytest.mark.parametrize("text, resolution, hdr, audio", [
+    ("HD / Surround Sound", "720p", "", "surround"),
+    ("4K HDR10 5.1", "2160p", "HDR10", "5.1"),
+    ("1080p Dolby Vision Stereo", "1080p", "Dolby Vision", "stereo"),
+    ("SD", "480p", "", ""),
+    ("", "", "", ""),
+])
+def test_available_in_parser(text, resolution, hdr, audio):
+    from pyfanedit.converters import _parse_available_in
+    assert _parse_available_in(text) == (resolution, hdr, audio)
+
+
+def test_available_in_lifted_to_release():
+    detail = FaneditDetail(
+        fanedit_id=1,
+        title="Example",
+        url="https://x",
+        available_in="HD Surround Sound",
+    )
+    rel = fanedit_to_release(detail)
+    assert rel.resolution == "720p"
+    assert rel.audio_channels == "surround"
+
+
+# ---------------------------------------------------------------------------
+# Edition extraction
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("title, edition", [
+    ("Star Wars: The Despecialized Edition", "The Despecialized Edition"),
+    ("Aliens: Director's Cut", "Director's Cut"),
+    ("Blade Runner: Final Cut", "Final Cut"),
+    ("Just A Title", ""),
+    ("Some Movie: A Recut Story", "A Recut Story"),
+])
+def test_edition_extraction(title, edition):
+    from pyfanedit.converters import _extract_edition
+    assert _extract_edition(title) == edition
+
+
+def test_edition_propagates_to_work_and_release():
+    rel = fanedit_to_release(_summary(title="Star Wars: The Despecialized Edition"))
+    assert rel.work.edition == "The Despecialized Edition"
+    assert rel.edition == "The Despecialized Edition"
+
+
+# ---------------------------------------------------------------------------
+# Content genres
+# ---------------------------------------------------------------------------
+
+def test_content_genres_lifted_from_detail():
+    detail = FaneditDetail(
+        fanedit_id=1,
+        title="Example",
+        url="https://x",
+        genre=["Action", "Sci-Fi"],
+    )
+    rel = fanedit_to_release(detail)
+    # Inherited from source movie; mediavocab content_genres is the typed home.
+    assert rel.work.content_genres == ["Action", "Sci-Fi"]
+    # Also kept in extra for round-trip with the legacy "genres" key.
+    assert rel.work.extra["genres"] == ["Action", "Sci-Fi"]
+
+
+# ---------------------------------------------------------------------------
+# release_date — must round-trip via mediavocab's IsoDate validator (no
+# manual datetime parsing in the converter).
+# ---------------------------------------------------------------------------
+
+def test_release_date_iso_round_trip():
+    detail = FaneditDetail(
+        fanedit_id=1,
+        title="Example",
+        url="https://x",
+        fanedit_release_date="2022-07-15",
+    )
+    rel = fanedit_to_release(detail)
+    assert rel.release_date == "2022-07-15"
