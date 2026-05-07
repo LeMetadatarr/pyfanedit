@@ -13,6 +13,8 @@ dependencies = ["beautifulsoup4", "curl_cffi", "pydantic>=2.0", "mediavocab>=0.1
 
 [project.optional-dependencies]
 test = ["pytest"]
+# Note: cassette-backed scraper tests are file-driven (curl_cffi is not
+# vcrpy-compatible). See tests/conftest.py for the cassette protocol.
 
 [project.urls]
 Homepage = "https://github.com/OpenJarbas/pyfanedit"
