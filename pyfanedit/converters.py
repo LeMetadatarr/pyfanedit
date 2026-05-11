@@ -1,6 +1,7 @@
 """Converters from pyfanedit models to mediavocab typed objects."""
 from __future__ import annotations
 
+import json
 import re
 from typing import Optional, Tuple, Union
 
@@ -10,7 +11,7 @@ from mediavocab import (
     EntityKind,
     EntityRef,
     MediaType,
-    PlaybackModality,
+    PlaybackType,
     RelationRole,
     Release as MvRelease,
     StreamMode,
@@ -227,10 +228,10 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
             external_ids["derived_from_imdb"] = fanedit.imdb_id
             source_imdb = fanedit.imdb_id
         if fanedit.franchise:
-            extra["franchise"] = fanedit.franchise
+            extra["franchise"] = ",".join(fanedit.franchise) if isinstance(fanedit.franchise, (list, tuple)) else str(fanedit.franchise)
         if fanedit.genre:
-            extra["genres"] = fanedit.genre
-            content_genres = list(fanedit.genre)
+            extra["genres"] = ",".join(fanedit.genre) if isinstance(fanedit.genre, (list, tuple)) else str(fanedit.genre)
+            content_genres = list(fanedit.genre) if isinstance(fanedit.genre, (list, tuple)) else [fanedit.genre]
         if fanedit.intention:
             extra["intention"] = fanedit.intention
         available_in = fanedit.available_in
@@ -273,7 +274,7 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
             external_ids={"imdb": source_imdb},
         )
         relation = WorkRelation(kind=WorkRelationKind.FANEDIT_OF, target=source_work)
-        extra["work_relations"] = [relation.model_dump(mode="json")]
+        extra["work_relations"] = json.dumps([relation.model_dump(mode="json")])
 
     # ------------------------------------------------------------------
     # Release-level publication date (recut date, parsed by mediavocab's
@@ -285,8 +286,8 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
     elif getattr(fanedit, "release_date", None):
         release_date_str = fanedit.release_date
 
-    # PlaybackModality.VIDEO — fanedits are always video works.
-    extra.setdefault("modality", PlaybackModality.VIDEO.value)
+    # PlaybackType.VIDEO — fanedits are always video works.
+    extra.setdefault("playback_type", PlaybackType.VIDEO.value)
 
     # ------------------------------------------------------------------
     # Lifted technical metadata from IFDB free-text fields.
@@ -320,7 +321,6 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
         work=work,
         uri=fanedit.url,
         image=fanedit.cover_url or "",
-        variant_kind=variant_kind,
         stream_mode=StreamMode.ON_DEMAND,
         external_ids=external_ids,
         extra=extra,

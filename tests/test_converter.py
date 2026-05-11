@@ -51,9 +51,8 @@ def test_type_mapping(raw_type, expected_variant, expected_media, expected_subty
     assert rel.work.variant_kind == expected_variant
     assert rel.work.media_type == expected_media
     assert rel.work.extra.get("fanedit_subtype") == expected_subtype
-    # variant_kind must propagate to the Release as well so consumers can
-    # filter editions without inspecting work fields.
-    assert rel.variant_kind == expected_variant
+    # variant_kind lives on the Work in mediavocab 1.0.
+    assert rel.work.variant_kind == expected_variant
 
 
 def test_unknown_type_falls_back_to_fanedit():
@@ -175,7 +174,9 @@ def test_detail_imdb_id_emits_fanedit_of_work_relation():
         fanedit_type="preservation",
     )
     rel = fanedit_to_release(detail)
-    relations = rel.work.extra.get("work_relations") or []
+    import json as _json
+    raw = rel.work.extra.get("work_relations")
+    relations = _json.loads(raw) if raw else []
     assert len(relations) == 1
     relation = relations[0]
     assert relation["kind"] == WorkRelationKind.FANEDIT_OF.value
@@ -200,8 +201,8 @@ def test_detail_franchise_and_genre_in_extra():
         intention="Restore the original cut.",
     )
     rel = fanedit_to_release(detail)
-    assert rel.work.extra["franchise"] == ["Star Wars"]
-    assert rel.work.extra["genres"] == ["Action", "Sci-Fi"]
+    assert rel.work.extra["franchise"] == "Star Wars"
+    assert rel.work.extra["genres"] == "Action,Sci-Fi"
     assert rel.work.extra["intention"] == "Restore the original cut."
 
 
@@ -330,7 +331,7 @@ def test_content_genres_lifted_from_detail():
     # Inherited from source movie; mediavocab content_genres is the typed home.
     assert rel.work.content_genres == ["Action", "Sci-Fi"]
     # Also kept in extra for round-trip with the legacy "genres" key.
-    assert rel.work.extra["genres"] == ["Action", "Sci-Fi"]
+    assert rel.work.extra["genres"] == "Action,Sci-Fi"
 
 
 # ---------------------------------------------------------------------------
