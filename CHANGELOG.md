@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0a1](https://github.com/TigreGotico/pyfanedit/tree/0.3.0a1) (2026-05-29)
+
+[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.2.0a1...0.3.0a1)
+
+**Merged pull requests:**
+
+- feat: route HTTP through unblock\_requests \(pre-emptive anti-bot\) [\#9](https://github.com/TigreGotico/pyfanedit/pull/9) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [0.2.0a1](https://github.com/TigreGotico/pyfanedit/tree/0.2.0a1) (2026-05-07)
 
 [Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.1.1...0.2.0a1)
