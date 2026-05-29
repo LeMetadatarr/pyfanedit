@@ -44,6 +44,11 @@ def _select_transport() -> str:
 
 def _default_session_factory(impersonate: str = "chrome120"):
     """Build a transport session per ``PYFANEDIT_TRANSPORT`` / availability."""
+    try:
+        from unblock_requests import CloudflareSession
+        return CloudflareSession(env_prefix="PYFANEDIT", wayback_fallback=True)
+    except Exception:
+        pass
     transport = _select_transport()
     if transport == "curl_cffi":
         try:
