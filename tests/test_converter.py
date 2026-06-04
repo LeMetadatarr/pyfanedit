@@ -51,9 +51,8 @@ def test_type_mapping(raw_type, expected_variant, expected_media, expected_subty
     assert rel.work.variant_kind == expected_variant
     assert rel.work.media_type == expected_media
     assert rel.work.extra.get("fanedit_subtype") == expected_subtype
-    # variant_kind must propagate to the Release as well so consumers can
-    # filter editions without inspecting work fields.
-    assert rel.variant_kind == expected_variant
+    # variant_kind lives on the Work only (one source of truth); consumers
+    # filter editions via rel.work.variant_kind.
 
 
 def test_unknown_type_falls_back_to_fanedit():
@@ -328,7 +327,8 @@ def test_content_genres_lifted_from_detail():
     )
     rel = fanedit_to_release(detail)
     # Inherited from source movie; mediavocab content_genres is the typed home.
-    assert rel.work.content_genres == ["Action", "Sci-Fi"]
+    # Work normalises genres to lowercase.
+    assert rel.work.content_genres == ["action", "sci-fi"]
     # Also kept in extra for round-trip with the legacy "genres" key.
     assert rel.work.extra["genres"] == ["Action", "Sci-Fi"]
 

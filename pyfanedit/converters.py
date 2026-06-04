@@ -316,11 +316,12 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
 
     work = Work(**work_kwargs)
 
+    # variant_kind lives on the Work only (one source of truth); Release has no
+    # such field. Consumers filter editions via ``release.work.variant_kind``.
     release_kwargs: dict = dict(
         work=work,
         uri=fanedit.url,
         image=fanedit.cover_url or "",
-        variant_kind=variant_kind,
         stream_mode=StreamMode.ON_DEMAND,
         external_ids=external_ids,
         extra=extra,
