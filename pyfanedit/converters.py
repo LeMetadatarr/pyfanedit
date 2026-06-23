@@ -10,7 +10,7 @@ from mediavocab import (
     EntityKind,
     EntityRef,
     MediaType,
-    PlaybackModality,
+    PlaybackType,
     RelationRole,
     Release as MvRelease,
     StreamMode,
@@ -285,8 +285,8 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
     elif getattr(fanedit, "release_date", None):
         release_date_str = fanedit.release_date
 
-    # PlaybackModality.VIDEO — fanedits are always video works.
-    extra.setdefault("modality", PlaybackModality.VIDEO.value)
+    # PlaybackType.VIDEO — fanedits are always video works.
+    extra.setdefault("modality", PlaybackType.VIDEO.value)
 
     # ------------------------------------------------------------------
     # Lifted technical metadata from IFDB free-text fields.
@@ -316,11 +316,12 @@ def fanedit_to_release(fanedit: Union[FaneditSummary, FaneditDetail]) -> MvRelea
 
     work = Work(**work_kwargs)
 
+    # variant_kind lives on the Work only (one source of truth); Release has no
+    # such field. Consumers filter editions via ``release.work.variant_kind``.
     release_kwargs: dict = dict(
         work=work,
         uri=fanedit.url,
         image=fanedit.cover_url or "",
-        variant_kind=variant_kind,
         stream_mode=StreamMode.ON_DEMAND,
         external_ids=external_ids,
         extra=extra,
