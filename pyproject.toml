@@ -9,7 +9,7 @@ description = "Scraping client for fanedit.org IFDB"
 license = { text = "Apache-2.0" }
 authors = [{ name = "JarbasAi", email = "jarbasai@mailfence.com" }]
 requires-python = ">=3.8"
-dependencies = ["beautifulsoup4", "requests", "pydantic>=2.0", "mediavocab>=1.0.0"]
+dependencies = ["beautifulsoup4", "requests", "pydantic>=2.0", "mediavocab>=1.0.0a0"]
 
 [project.optional-dependencies]
 stealth = ["curl_cffi", "unblock_requests"]
