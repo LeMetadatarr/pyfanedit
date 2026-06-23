@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1a1](https://github.com/TigreGotico/pyfanedit/tree/0.3.1a1) (2026-06-23)
+
+[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.3.0a1...0.3.1a1)
+
+**Merged pull requests:**
+
+- fix: migrate converters to mediavocab 1.0 [\#11](https://github.com/TigreGotico/pyfanedit/pull/11) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [0.3.0a1](https://github.com/TigreGotico/pyfanedit/tree/0.3.0a1) (2026-05-29)
 
 [Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.2.0a1...0.3.0a1)
