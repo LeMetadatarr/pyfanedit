@@ -1,13 +1,10 @@
 # pyfanedit
 
-Python scraping client for [fanedit.org](https://fanedit.org) (IFDB — the Internet Fanedit Database).
+Python scraping client for [fanedit.org](https://fanedit.org) (IFDB - the Internet Fanedit Database).
 
 ## Overview
 
-fanedit.org hosts the IFDB, a community-curated catalogue of fan-edited films and TV shows. Entries
-cover cut-downs, extended editions, TV-to-movie conversions, preservations, and more. The site has no
-public API, so pyfanedit scrapes HTML pages using `curl_cffi` (for TLS fingerprint bypass) and
-`BeautifulSoup`, then returns structured Pydantic models.
+fanedit.org hosts the IFDB, a community-curated catalogue of fan-edited films and TV shows. Entries include cut-downs, extended editions, TV-to-movie conversions, and other formats such as preservations. The site has no public API, so pyfanedit scrapes HTML pages with `curl_cffi` (for TLS fingerprint bypass) and `BeautifulSoup`, then returns structured Pydantic models.
 
 ## Quick Install
 
@@ -42,10 +39,10 @@ for r in results[:3]:
 
 ## Contents
 
-- [Quick Start](quickstart.md) — install, first search, pagination, common pitfalls
-- [API Reference](reference.md) — every method and every model field
-- [IDs, IMDB Mapping, and Metadata](ids-and-metadata.md) — identifier types and field availability matrix
-- [Advanced Usage](advanced.md) — custom sessions, bulk export, reviewer feeds, news integration, extending the parser
+- [Quick Start](quickstart.md) - install, first search, pagination, common pitfalls
+- [API Reference](reference.md) - every method and every model field
+- [IDs, IMDB Mapping, and Metadata](ids-and-metadata.md) - identifier types and field availability matrix
+- [Advanced Usage](advanced.md) - custom sessions, bulk export, reviewer feeds, news integration, extending the parser
 
 ## See also
 
