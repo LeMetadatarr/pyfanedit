@@ -4,7 +4,7 @@
 
 `pyfanedit/client.py:27`
 
-The single entry point for all fanedit.org interactions. Wraps a `Session` internally.
+The single entry point for all fanedit.org interactions. It wraps a `Session` internally.
 
 ### Constructor
 
@@ -15,7 +15,7 @@ FaneditClient(impersonate: str = "chrome120", cache_ttl: float = 300.0)
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `impersonate` | `str` | `"chrome120"` | Browser profile passed to `curl_cffi` for TLS fingerprinting |
-| `cache_ttl` | `float` | `300.0` | Seconds before a cached response expires; `0` disables caching |
+| `cache_ttl` | `float` | `300.0` | Seconds before a cached response expires. `0` disables caching |
 
 ---
 
@@ -33,10 +33,10 @@ Return one page of a named category.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `category` | `str` | — | A key from `CATEGORIES` (e.g. `"fanfix"`) or a raw URL path |
+| `category` | `str` | - | A key from `CATEGORIES` (e.g. `"fanfix"`) or a raw URL path |
 | `page` | `int` | `1` | 1-based page number |
 
-Returns `(items, next_page_url)` where `next_page_url` is `None` on the last page.
+Returns `(items, next_page_url)`. `next_page_url` is `None` on the last page.
 
 ```python
 items, next_page = client.get_category("fanfix")
@@ -51,13 +51,12 @@ print(items[0].title, next_page)
 iter_category(category: str, max_pages: int = 0) -> Iterator[FaneditSummary]
 ```
 
-Yield every fanedit in a category across all pages. Set `max_pages` to a positive integer
-to stop early.
+Yield every fanedit in a category across all pages. Set `max_pages` to a positive integer to stop early.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `category` | `str` | — | Same as `get_category` |
-| `max_pages` | `int` | `0` | Maximum pages to fetch; `0` means unlimited |
+| `category` | `str` | - | Same as `get_category` |
+| `max_pages` | `int` | `0` | Maximum pages to fetch. `0` means unlimited |
 
 ```python
 for edit in client.iter_category("extended", max_pages=2):
@@ -86,10 +85,10 @@ Search the IFDB and return one page of results.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `keywords` | `str` | — | Search terms |
+| `keywords` | `str` | - | Search terms |
 | `scope` | `str` | `"title"` | `"title"` or `"reviews"` |
 | `query_type` | `str` | `"all"` | `"all"` (match all words), `"any"` (match any word), `"exact"` (exact phrase) |
-| `order` | `str` | `"rdate"` | Sort order — see `ORDER_CHOICES` |
+| `order` | `str` | `"rdate"` | Sort order - see `ORDER_CHOICES` |
 | `page` | `int` | `1` | 1-based page number |
 
 Returns `(items, next_page_url)`.
@@ -112,8 +111,7 @@ iter_search(
 ) -> Iterator[FaneditSummary]
 ```
 
-Yield all search results across pages. Parameters match `search` except `page` is managed
-internally. `max_pages=0` means no limit.
+Yield all search results across pages. Parameters match `search`, except `page` is managed internally. `max_pages=0` means no limit.
 
 ```python
 for edit in client.iter_search("star trek", query_type="any", max_pages=5):
@@ -136,8 +134,8 @@ Browse by a structured tag. Returns `(items, next_page_url)`.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `tag_type` | `str` | — | Tag dimension (e.g. `"franchise"`, `"faneditorname"`) |
-| `tag_value` | `str` | — | Slugified tag value (e.g. `"star-wars"`) |
+| `tag_type` | `str` | - | Tag dimension (e.g. `"franchise"`, `"faneditorname"`) |
+| `tag_value` | `str` | - | Slugified tag value (e.g. `"star-wars"`) |
 | `page` | `int` | `1` | 1-based page number |
 
 ```python
@@ -215,14 +213,13 @@ print(detail.imdb_id, detail.genre, detail.time_cut)
 get_reviewer_rank(page: int = 1) -> tuple[list[ReviewerEntry], str | None]
 ```
 
-Return one page of the reviewer leaderboard (approximately 50 entries per page).
+Return one page of the reviewer leaderboard (about 50 entries per page).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `page` | `int` | `1` | 1-based page number |
 
-Returns `(entries, next_page_url)` where `next_page_url` is `None` on the last page.
-Each `ReviewerEntry` includes a `user_id` that can be passed directly to `get_user_reviews`.
+Returns `(entries, next_page_url)`. `next_page_url` is `None` on the last page. Each `ReviewerEntry` includes a `user_id` that you can pass directly to `get_user_reviews`.
 
 ```python
 entries, _ = client.get_reviewer_rank()
@@ -264,9 +261,9 @@ Return one page of reviews written by a specific user.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `user_id` | `int` | — | Numeric jReviews user ID from `ReviewerEntry.user_id` |
+| `user_id` | `int` | - | Numeric jReviews user ID from `ReviewerEntry.user_id` |
 | `page` | `int` | `1` | 1-based page number |
-| `order` | `str` | `"rdate"` | Sort order — see `REVIEW_ORDER_CHOICES` |
+| `order` | `str` | `"rdate"` | Sort order - see `REVIEW_ORDER_CHOICES` |
 
 Returns `(reviews, next_page_url)`.
 
@@ -335,9 +332,7 @@ items, _ = client.get_latest_trusted_reviews()
 get_news() -> list[NewsArticle]
 ```
 
-Return the news front page article cards (up to approximately 15 articles). Card-level
-fields are populated; `body_html`, `body_text`, `views`, `category`, and
-`mentioned_fanedit_urls` are always empty — call `get_news_article` for those.
+Return the news front-page article cards (about 15 articles at most). Card-level fields are populated. `body_html`, `body_text`, `views`, `category`, and `mentioned_fanedit_urls` are always empty - call `get_news_article` for those.
 
 ```python
 articles = client.get_news()
@@ -353,7 +348,7 @@ for a in articles:
 get_news_article(url: str) -> NewsArticle
 ```
 
-Fetch a full news article including body text and IFDB URLs mentioned in the body.
+Fetch a full news article, including body text and IFDB URLs mentioned in the body.
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -445,12 +440,11 @@ REVIEW_ORDER_CHOICES = (
 
 `pyfanedit/models.py:28`
 
-Populated from listing pages (category, search, tag, curated lists). Fields that require
-the detail page are always `None` here.
+Populated from listing pages (category, search, tag, curated lists). Fields that need the detail page are always `None` here.
 
 | Field | Type | Nullable | Source on page |
 |---|---|---|---|
-| `fanedit_id` | `int` | Yes — always `None` on summary | WordPress `postid-NNN` body class (detail page only) |
+| `fanedit_id` | `int` | Yes - always `None` on summary | WordPress `postid-NNN` body class (detail page only) |
 | `slug` | `str` | Yes | Derived from URL path (`_slug_from_url`) |
 | `title` | `str` | No | `.jrListingTitle a` text |
 | `url` | `str` | No | `.jrListingTitle a` href |
@@ -474,8 +468,7 @@ the detail page are always `None` here.
 
 `pyfanedit/models.py:51`
 
-Populated from a single fanedit detail page. Contains all `FaneditSummary` fields (with
-the same-named counterparts) plus the additional fields below.
+Populated from a single fanedit detail page. Contains all `FaneditSummary` fields (with the same-named counterparts) plus the additional fields below.
 
 | Field | Type | Nullable | Source on page |
 |---|---|---|---|
@@ -486,8 +479,8 @@ the same-named counterparts) plus the additional fields below.
 | `cover_url` | `str` | Yes | `.jrMediaPhoto` `data-jr-src` or `src` |
 | `faneditor` | `str` | Yes | `jrFieldRow` label `"faneditor name:"` |
 | `original_title` | `str` | Yes | `jrFieldRow` label `"original movie/show title:"` |
-| `genre` | `list[str]` | Yes | `jrFieldRow` label `"genre:"` — list of linked tags |
-| `franchise` | `list[str]` | Yes | `jrFieldRow` label `"franchise:"` — list of linked tags |
+| `genre` | `list[str]` | Yes | `jrFieldRow` label `"genre:"` - list of linked tags |
+| `franchise` | `list[str]` | Yes | `jrFieldRow` label `"franchise:"` - list of linked tags |
 | `fanedit_type` | `str` | Yes | `jrFieldRow` label `"fanedit type:"` |
 | `imdb_id` | `str` | Yes | First `/(tt\d+)` match in any `<a href>` on the page |
 | `original_release_date` | `str` | Yes | `jrFieldRow` label `"original release date:"` |
@@ -537,7 +530,7 @@ the same-named counterparts) plus the additional fields below.
 
 `pyfanedit/models.py:6`
 
-All fields are `Optional[float]`, defaulting to `None` if the rating row is absent.
+All fields are `Optional[float]`, and default to `None` if the rating row is absent.
 
 | Field | Label on page |
 |---|---|
@@ -554,8 +547,7 @@ All fields are `Optional[float]`, defaulting to `None` if the rating row is abse
 
 `pyfanedit/models.py:101`
 
-One row from the reviewer leaderboard (`/reviewer-rank/`). The `user_id` field is the
-stable numeric key used by `get_user_reviews`.
+One row from the reviewer leaderboard (`/reviewer-rank/`). The `user_id` field is the stable numeric key used by `get_user_reviews`.
 
 | Field | Type | Nullable | Source |
 |---|---|---|---|
@@ -574,9 +566,7 @@ stable numeric key used by `get_user_reviews`.
 
 `pyfanedit/models.py:113`
 
-One review from a user's review list page (`/my-reviews/{user_id}/`). Contains the
-fanedit being reviewed and the ratings given, but not the review body text (which is only
-available on the fanedit detail page).
+One review from a user's review list page (`/my-reviews/{user_id}/`). Contains the fanedit being reviewed and the ratings given, but not the review body text (that text is only available on the fanedit detail page).
 
 | Field | Type | Nullable | Source |
 |---|---|---|---|
@@ -594,9 +584,7 @@ available on the fanedit detail page).
 
 `pyfanedit/models.py:124`
 
-A news article. Fields from the listing card are always populated when returned by
-`get_news`. Fields marked "article page only" are `None` from `get_news` and populated
-only when fetching a specific article via `get_news_article`.
+A news article. Fields from the listing card are always populated when `get_news` returns them. Fields marked "article page only" are `None` from `get_news`, and are populated only when you fetch a specific article with `get_news_article`.
 
 | Field | Type | Nullable | Source |
 |---|---|---|---|
@@ -608,16 +596,11 @@ only when fetching a specific article via `get_news_article`.
 | `author_user_id` | `int` | Yes | `data-user-id` attribute on the avatar link |
 | `published_at` | `str` | Yes | `time` element `datetime` attribute (ISO string) |
 | `reading_time` | `str` | Yes | `li.newsCard-date` text containing `"min read"` |
-| `views` | `int` | Yes | Article page only — `"Views N"` in `.pairs--justified` |
-| `category` | `str` | Yes | Article page only — last breadcrumb link text |
-| `body_html` | `str` | Yes | Article page only — raw HTML of `.bbWrapper` |
-| `body_text` | `str` | Yes | Article page only — plain text of `.bbWrapper` |
-| `mentioned_fanedit_urls` | `list[str]` | No (empty list) | Article page only — all `<a href>` inside `.bbWrapper` pointing to `fanedit.org` but not to `/forums/` |
+| `views` | `int` | Yes | Article page only - `"Views N"` in `.pairs--justified` |
+| `category` | `str` | Yes | Article page only - last breadcrumb link text |
+| `body_html` | `str` | Yes | Article page only - raw HTML of `.bbWrapper` |
+| `body_text` | `str` | Yes | Article page only - plain text of `.bbWrapper` |
+| `mentioned_fanedit_urls` | `list[str]` | No (empty list) | Article page only - all `<a href>` inside `.bbWrapper` pointing to `fanedit.org` but not to `/forums/` |
 
 ---
-
-## See also
-
-- [Quick Start](quickstart.md)
-- [IDs, IMDB Mapping, and Metadata](ids-and-metadata.md)
-- [Advanced Usage](advanced.md)
+[← Quick Start](quickstart.md) · [Home](index.md) · [IDs, IMDB Mapping, and Metadata →](ids-and-metadata.md)

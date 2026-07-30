@@ -8,6 +8,7 @@ polite crawling with delays.
 import time
 
 from pyfanedit import FaneditClient
+from pyfanedit.parsers import parse_listing_page
 from pyfanedit.session import Session
 
 # --- Option A: configure via FaneditClient constructor ---
@@ -23,8 +24,6 @@ session = Session(
 )
 
 # Attach the custom session to a client
-from pyfanedit.parsers import parse_listing_page
-
 def polite_search(keywords: str, delay: float = 1.0):
     """Search with a per-request delay."""
     page = 1

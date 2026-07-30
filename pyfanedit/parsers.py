@@ -294,6 +294,45 @@ def parse_listing_page(html: str) -> Tuple[List[FaneditSummary], Optional[str]]:
         if item:
             items.append(item)
 
+    # /latest-user-reviews/ and /latest-trusted-reviewer-reviews/ use a
+    # different markup: each entry is a ``jrReviewListLayout`` block whose
+    # only fanedit-identifying element is an inner ``jrListingTitle``.
+    if not items:
+        for el in soup.find_all(class_="jrReviewListLayout"):
+            title_el = el.find(class_="jrListingTitle")
+            if title_el is None:
+                continue
+            a = title_el.find("a")
+            if a is None or not a.get("href"):
+                continue
+            url = a["href"]
+            title = a.get_text(strip=True)
+            slug = _slug_from_url(url)
+            cover_url: Optional[str] = None
+            thumb = el.find(class_="jrListingThumbnail")
+            if thumb:
+                img = thumb.find("img")
+                if img:
+                    src = img.get("data-jr-src") or img.get("src", "")
+                    if src and not src.startswith("data:"):
+                        cover_url = src
+            fanedit_type: Optional[str] = None
+            cat_el = el.find(class_="jrListingCategory")
+            if cat_el:
+                fanedit_type = cat_el.get_text(strip=True)
+            updated: Optional[str] = None
+            date_el = el.find(class_="jrReviewCreated")
+            if date_el:
+                updated = date_el.get("datetime") or date_el.get_text(strip=True)
+            items.append(FaneditSummary(
+                slug=slug,
+                title=title,
+                url=url,
+                cover_url=cover_url,
+                fanedit_type=fanedit_type,
+                updated=updated,
+            ))
+
     # next page
     next_url: Optional[str] = None
     pagenav = soup.find(class_="jrPagination")
