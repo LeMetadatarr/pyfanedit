@@ -1,36 +1,44 @@
 # Changelog
 
-## [0.3.1a2](https://github.com/TigreGotico/pyfanedit/tree/0.3.1a2) (2026-07-30)
+## [0.3.1a3](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a3) (2026-08-02)
 
-[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.3.1a1...0.3.1a2)
-
-**Merged pull requests:**
-
-- docs: rewrite README in Simplified Technical English [\#15](https://github.com/TigreGotico/pyfanedit/pull/15) ([JarbasAl](https://github.com/JarbasAl))
-
-## [0.3.1a1](https://github.com/TigreGotico/pyfanedit/tree/0.3.1a1) (2026-06-23)
-
-[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.3.0a1...0.3.1a1)
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a2...0.3.1a3)
 
 **Merged pull requests:**
 
-- fix: migrate converters to mediavocab 1.0 [\#11](https://github.com/TigreGotico/pyfanedit/pull/11) ([JarbasAl](https://github.com/JarbasAl))
+- docs: QA pass — accuracy, org-move URLs, related projects [\#17](https://github.com/LeMetadatarr/pyfanedit/pull/17) ([JarbasAl](https://github.com/JarbasAl))
 
-## [0.3.0a1](https://github.com/TigreGotico/pyfanedit/tree/0.3.0a1) (2026-05-29)
+## [0.3.1a2](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a2) (2026-07-30)
 
-[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.2.0a1...0.3.0a1)
-
-**Merged pull requests:**
-
-- feat: route HTTP through unblock\_requests \(pre-emptive anti-bot\) [\#9](https://github.com/TigreGotico/pyfanedit/pull/9) ([JarbasAl](https://github.com/JarbasAl))
-
-## [0.2.0a1](https://github.com/TigreGotico/pyfanedit/tree/0.2.0a1) (2026-05-07)
-
-[Full Changelog](https://github.com/TigreGotico/pyfanedit/compare/0.1.1...0.2.0a1)
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a1...0.3.1a2)
 
 **Merged pull requests:**
 
-- feat: variant-aware fanedit\_to\_release + tests [\#4](https://github.com/TigreGotico/pyfanedit/pull/4) ([JarbasAl](https://github.com/JarbasAl))
+- docs: rewrite README in Simplified Technical English [\#15](https://github.com/LeMetadatarr/pyfanedit/pull/15) ([JarbasAl](https://github.com/JarbasAl))
+
+## [0.3.1a1](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a1) (2026-06-23)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.0a1...0.3.1a1)
+
+**Merged pull requests:**
+
+- fix: migrate converters to mediavocab 1.0 [\#11](https://github.com/LeMetadatarr/pyfanedit/pull/11) ([JarbasAl](https://github.com/JarbasAl))
+
+## [0.3.0a1](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.0a1) (2026-05-29)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.2.0a1...0.3.0a1)
+
+**Merged pull requests:**
+
+- feat: route HTTP through unblock\_requests \(pre-emptive anti-bot\) [\#9](https://github.com/LeMetadatarr/pyfanedit/pull/9) ([JarbasAl](https://github.com/JarbasAl))
+
+## [0.2.0a1](https://github.com/LeMetadatarr/pyfanedit/tree/0.2.0a1) (2026-05-07)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.1.1...0.2.0a1)
+
+**Merged pull requests:**
+
+- feat: variant-aware fanedit\_to\_release + tests [\#4](https://github.com/LeMetadatarr/pyfanedit/pull/4) ([JarbasAl](https://github.com/JarbasAl))
 
 
 
