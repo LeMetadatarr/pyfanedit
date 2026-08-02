@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1a4](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a4) (2026-08-02)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a3...0.3.1a4)
+
+**Merged pull requests:**
+
+- fix: pin mediavocab\>=2.0.0a0 \(2.x prerelease has the API pyfanedit targets\) [\#18](https://github.com/LeMetadatarr/pyfanedit/pull/18) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [0.3.1a3](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a3) (2026-08-02)
 
 [Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a2...0.3.1a3)
