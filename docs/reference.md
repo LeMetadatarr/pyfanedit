@@ -2,7 +2,7 @@
 
 ## FaneditClient
 
-`pyfanedit/client.py:27`
+`pyfanedit/client.py:34`
 
 The single entry point for all fanedit.org interactions. It wraps a `Session` internally.
 
@@ -23,7 +23,7 @@ FaneditClient(impersonate: str = "chrome120", cache_ttl: float = 300.0)
 
 #### `get_category`
 
-`pyfanedit/client.py:37`
+`pyfanedit/client.py:70`
 
 ```python
 get_category(category: str, page: int = 1) -> tuple[list[FaneditSummary], str | None]
@@ -45,7 +45,7 @@ print(items[0].title, next_page)
 
 #### `iter_category`
 
-`pyfanedit/client.py:52`
+`pyfanedit/client.py:85`
 
 ```python
 iter_category(category: str, max_pages: int = 0) -> Iterator[FaneditSummary]
@@ -69,7 +69,7 @@ for edit in client.iter_category("extended", max_pages=2):
 
 #### `search`
 
-`pyfanedit/client.py:67`
+`pyfanedit/client.py:99`
 
 ```python
 search(
@@ -99,7 +99,7 @@ results, next_page = client.search("batman", order="rvote")
 
 #### `iter_search`
 
-`pyfanedit/client.py:98`
+`pyfanedit/client.py:130`
 
 ```python
 iter_search(
@@ -124,7 +124,7 @@ for edit in client.iter_search("star trek", query_type="any", max_pages=5):
 
 #### `get_by_tag`
 
-`pyfanedit/client.py:120`
+`pyfanedit/client.py:153`
 
 ```python
 get_by_tag(tag_type: str, tag_value: str, page: int = 1) -> tuple[list[FaneditSummary], str | None]
@@ -144,7 +144,7 @@ items, _ = client.get_by_tag("franchise", "star-wars")
 
 #### `iter_by_tag`
 
-`pyfanedit/client.py:138`
+`pyfanedit/client.py:171`
 
 ```python
 iter_by_tag(tag_type: str, tag_value: str, max_pages: int = 0) -> Iterator[FaneditSummary]
@@ -170,7 +170,7 @@ method(page: int = 1) -> tuple[list[FaneditSummary], str | None]
 | `get_most_popular` | `most-popular/` | Most viewed edits |
 | `get_award_winners` | tag `award/fanedit-of-the-month` | Fanedit of the Month winners |
 
-`pyfanedit/client.py:153`
+`pyfanedit/client.py:186`
 
 ```python
 items, next_page = client.get_top_user_rated()
@@ -182,7 +182,7 @@ items, next_page = client.get_top_user_rated()
 
 #### `get_detail`
 
-`pyfanedit/client.py:176`
+`pyfanedit/client.py:232`
 
 ```python
 get_detail(url: str) -> FaneditDetail
@@ -207,7 +207,7 @@ print(detail.imdb_id, detail.genre, detail.time_cut)
 
 #### `get_reviewer_rank`
 
-`pyfanedit/client.py:190`
+`pyfanedit/client.py:258`
 
 ```python
 get_reviewer_rank(page: int = 1) -> tuple[list[ReviewerEntry], str | None]
@@ -228,7 +228,7 @@ print(entries[0].username, entries[0].review_count, entries[0].helpful_pct)
 
 #### `iter_reviewer_rank`
 
-`pyfanedit/client.py:199`
+`pyfanedit/client.py:267`
 
 ```python
 iter_reviewer_rank(max_pages: int = 0) -> Iterator[ReviewerEntry]
@@ -247,7 +247,7 @@ for reviewer in client.iter_reviewer_rank(max_pages=2):
 
 #### `get_user_reviews`
 
-`pyfanedit/client.py:224`
+`pyfanedit/client.py:292`
 
 ```python
 get_user_reviews(
@@ -275,7 +275,7 @@ for r in reviews:
 
 #### `iter_user_reviews`
 
-`pyfanedit/client.py:244`
+`pyfanedit/client.py:312`
 
 ```python
 iter_user_reviews(
@@ -294,7 +294,7 @@ for review in client.iter_user_reviews(1234, max_pages=5):
 
 #### `get_latest_user_reviews`
 
-`pyfanedit/client.py:259`
+`pyfanedit/client.py:327`
 
 ```python
 get_latest_user_reviews(page: int = 1) -> tuple[list[FaneditSummary], str | None]
@@ -308,7 +308,7 @@ items, _ = client.get_latest_user_reviews()
 
 #### `get_latest_trusted_reviews`
 
-`pyfanedit/client.py:264`
+`pyfanedit/client.py:332`
 
 ```python
 get_latest_trusted_reviews(page: int = 1) -> tuple[list[FaneditSummary], str | None]
@@ -326,7 +326,7 @@ items, _ = client.get_latest_trusted_reviews()
 
 #### `get_news`
 
-`pyfanedit/client.py:273`
+`pyfanedit/client.py:341`
 
 ```python
 get_news() -> list[NewsArticle]
@@ -342,7 +342,7 @@ for a in articles:
 
 #### `get_news_article`
 
-`pyfanedit/client.py:278`
+`pyfanedit/client.py:346`
 
 ```python
 get_news_article(url: str) -> NewsArticle
@@ -368,7 +368,7 @@ for fanedit_url in article.mentioned_fanedit_urls:
 
 ### `CATEGORIES`
 
-`pyfanedit/client.py:11`
+`pyfanedit/client.py:18`
 
 ```python
 CATEGORIES = {
@@ -387,7 +387,7 @@ CATEGORIES = {
 
 ### `ORDER_CHOICES`
 
-`pyfanedit/client.py:24`
+`pyfanedit/client.py:31`
 
 ```python
 ORDER_CHOICES = ("rdate", "date", "modified", "alpha", "rratio", "rvote")
@@ -404,7 +404,7 @@ ORDER_CHOICES = ("rdate", "date", "modified", "alpha", "rratio", "rvote")
 
 ### `REVIEW_ORDER_CHOICES`
 
-`pyfanedit/client.py:213`
+`pyfanedit/client.py:281`
 
 Controls the sort order for `get_user_reviews` and `iter_user_reviews`.
 

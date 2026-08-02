@@ -9,7 +9,7 @@ You can reference every fanedit on IFDB by up to three different identifiers.
 The URL slug is the last path segment of a fanedit's canonical URL, for example `"star-wars-begins"` from `https://fanedit.org/star-wars-begins/`.
 
 - Always available on both listing and detail pages.
-- Derived by `_slug_from_url` - `pyfanedit/parsers.py:95`.
+- Derived by `_slug_from_url` - `pyfanedit/parsers.py:98`.
 - Human-readable, but not guaranteed unique across all time (a slug could in theory be reused if an entry is deleted).
 - Use the slug to construct a URL to pass to `get_detail`.
 
@@ -18,7 +18,7 @@ The URL slug is the last path segment of a fanedit's canonical URL, for example 
 The WordPress post ID, an integer such as `12345`.
 
 - **Only available on detail pages.** On listing/search pages it is always `None`.
-- Extracted from the `postid-NNN` CSS class on the `<body>` element - `pyfanedit/parsers.py:85`.
+- Extracted from the `postid-NNN` CSS class on the `<body>` element - `pyfanedit/parsers.py:88`.
 - Stable across slug changes.
 - Use this as a persistent primary key when you build a local dataset.
 
@@ -27,7 +27,7 @@ The WordPress post ID, an integer such as `12345`.
 An IMDB title identifier in the form `tt0076759`.
 
 - **Only available on detail pages.**
-- Extracted by scanning all `<a href>` elements for the pattern `/(tt\d+)` - `pyfanedit/parsers.py:77`.
+- Extracted by scanning all `<a href>` elements for the pattern `/(tt\d+)` - `pyfanedit/parsers.py:80`.
 - Not guaranteed: some edits have no IMDB link, and others have a malformed URL where the IMDB link is nested inside a fanedit.org URL (for example, `https://fanedit.org/https://imdb.com/title/tt0076759/`). The regex still finds the `tt` ID in that case, but verify it before you rely on it.
 - Links to the *source* film or show, not to the fanedit itself. Fanedits are not on IMDB.
 
@@ -160,7 +160,7 @@ These fields come from the quick-view card shown on listing, search, and tag pag
 
 **Malformed IMDB URLs.** Some pages embed the IMDB link as `https://fanedit.org/https://www.imdb.com/title/tt0076759/`. The regex in `_imdb_id` (`/(tt\d+)`) matches in either case, but with the double-URL form you cannot use the surrounding `<a>` href as-is to open IMDB.
 
-**`extra_fields` as a safety net.** If fanedit.org adds a new metadata label that is not in `_DETAIL_FIELD_MAP` (`pyfanedit/parsers.py:12`), the value lands in `FaneditDetail.extra_fields` instead of being dropped. Check this dict when you debug missing data.
+**`extra_fields` as a safety net.** If fanedit.org adds a new metadata label that is not in `_DETAIL_FIELD_MAP` (`pyfanedit/parsers.py:15`), the value lands in `FaneditDetail.extra_fields` instead of being dropped. Check this dict when you debug missing data.
 
 ---
 

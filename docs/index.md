@@ -27,7 +27,7 @@ for r in results[:3]:
 
 | Class | Purpose | Source |
 |---|---|---|
-| `FaneditClient` | All user-facing methods (search, browse, detail, reviewers, news) | `pyfanedit/client.py:27` |
+| `FaneditClient` | All user-facing methods (search, browse, detail, reviewers, news) | `pyfanedit/client.py:34` |
 | `FaneditSummary` | Lightweight record from listing/search pages | `pyfanedit/models.py:28` |
 | `FaneditDetail` | Full record from a single fanedit page | `pyfanedit/models.py:51` |
 | `Review` | One user or editor review embedded in a detail page | `pyfanedit/models.py:15` |
@@ -35,7 +35,7 @@ for r in results[:3]:
 | `ReviewerEntry` | One row from the reviewer leaderboard | `pyfanedit/models.py:101` |
 | `UserReviewEntry` | One review from a user's review list page | `pyfanedit/models.py:113` |
 | `NewsArticle` | A news article card or full article with body text | `pyfanedit/models.py:124` |
-| `Session` | HTTP layer with caching and TLS impersonation | `pyfanedit/session.py:14` |
+| `Session` | HTTP layer with caching and TLS impersonation | `pyfanedit/session.py:79` |
 
 ## Contents
 
@@ -47,4 +47,4 @@ for r in results[:3]:
 ## See also
 
 - [fanedit.org](https://fanedit.org)
-- [GitHub repository](https://github.com/OpenJarbas/pyfanedit)
+- [GitHub repository](https://github.com/LeMetadatarr/pyfanedit)
