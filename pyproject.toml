@@ -18,7 +18,7 @@ test = ["pytest", "curl_cffi"]
 # vcrpy-compatible). See tests/conftest.py for the cassette protocol.
 
 [project.urls]
-Homepage = "https://github.com/OpenJarbas/pyfanedit"
+Homepage = "https://github.com/LeMetadatarr/pyfanedit"
 
 [tool.setuptools.dynamic]
 version = { attr = "pyfanedit.version.__version__" }

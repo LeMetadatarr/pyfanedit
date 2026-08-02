@@ -21,16 +21,16 @@ from pyfanedit.parsers import parse_listing_page, parse_detail_page
 session = Session(impersonate="chrome120", cache_ttl=600.0, cache_size=1000)
 ```
 
-pyfanedit forwards the `impersonate` string directly to `curl_cffi.requests.Session` - `pyfanedit/session.py:21`. Consult the curl_cffi documentation for the full list of supported browser profile names.
+pyfanedit forwards the `impersonate` string directly to `curl_cffi.requests.Session` - `pyfanedit/session.py:56`. Consult the curl_cffi documentation for the full list of supported browser profile names.
 
 ### Cache Behavior
 
-`Session` stores responses in an in-process LRU-style dict - `pyfanedit/session.py:14`.
+`Session` stores responses in an in-process LRU-style dict - `pyfanedit/session.py:97`.
 
 - Cache key is `(method, url, sorted_params)`.
 - When the cache reaches `cache_size` entries, pyfanedit evicts the oldest entry (by insertion timestamp).
 - Entries older than `cache_ttl` seconds are stale and get re-fetched.
-- A `threading.Lock` protects the cache dict, so the session is safe to use from multiple threads at once - `pyfanedit/session.py:6`.
+- A `threading.Lock` protects the cache dict, so the session is safe to use from multiple threads at once - `pyfanedit/session.py:98`.
 
 ---
 
@@ -72,7 +72,7 @@ for edit in client.iter_category("fanfix"):
     time.sleep(0.3)   # be polite
 ```
 
-`iter_category` (`pyfanedit/client.py:52`) stops automatically when the listing page returns no next-page URL. Set `max_pages` if you only want the first N pages.
+`iter_category` (`pyfanedit/client.py:85`) stops automatically when the listing page returns no next-page URL. Set `max_pages` if you only want the first N pages.
 
 ---
 
@@ -105,7 +105,7 @@ with open("fanfix.jsonl", "w") as fh:
 
 ### Known `tag_type` Values
 
-`get_by_tag(tag_type, tag_value)` (`pyfanedit/client.py:120`) constructs the path `fanedit-search/tag/<tag_type>/<tag_value>/`. The client documents the following `tag_type` values:
+`get_by_tag(tag_type, tag_value)` (`pyfanedit/client.py:153`) constructs the path `fanedit-search/tag/<tag_type>/<tag_value>/`. The client documents the following `tag_type` values:
 
 | `tag_type` | Example `tag_value` | Description |
 |---|---|---|
@@ -168,7 +168,7 @@ Check this dict when a field appears on the page but is `None` on the model.
 
 To permanently map a new label to a model field:
 
-1. Add the label (lowercase, with trailing colon) and the field name to `_DETAIL_FIELD_MAP` in `pyfanedit/parsers.py:12`.
+1. Add the label (lowercase, with trailing colon) and the field name to `_DETAIL_FIELD_MAP` in `pyfanedit/parsers.py:15`.
 2. Add the corresponding field to `FaneditDetail` in `pyfanedit/models.py:51`.
 
 Example: suppose IFDB adds a `"language:"` field:
@@ -190,7 +190,7 @@ No other changes are needed. pyfanedit populates the field automatically on the 
 
 ### Adding a Field to Summaries
 
-Listing pages expose fewer fields. To add a new summary field, update `_SUMMARY_FIELD_MAP` in `pyfanedit/parsers.py:33` and add the field to `FaneditSummary` in `pyfanedit/models.py:28`.
+Listing pages expose fewer fields. To add a new summary field, update `_SUMMARY_FIELD_MAP` in `pyfanedit/parsers.py:36` and add the field to `FaneditSummary` in `pyfanedit/models.py:28`.
 
 ---
 
@@ -217,8 +217,8 @@ for review in client.iter_user_reviews(top.user_id, order="helpful"):
     time.sleep(0.3)
 ```
 
-`get_reviewer_rank` - `pyfanedit/client.py:190`
-`iter_user_reviews` - `pyfanedit/client.py:244`
+`get_reviewer_rank` - `pyfanedit/client.py:258`
+`iter_user_reviews` - `pyfanedit/client.py:312`
 
 ### Building a "New Fanedits This Week" Feed from News
 
@@ -244,10 +244,10 @@ for card in articles:
         time.sleep(0.3)
 ```
 
-`get_news` - `pyfanedit/client.py:273`
-`get_news_article` - `pyfanedit/client.py:278`
+`get_news` - `pyfanedit/client.py:341`
+`get_news_article` - `pyfanedit/client.py:346`
 
-`mentioned_fanedit_urls` collects every `<a href>` inside the article body that points to `fanedit.org` but not to `/forums/` - `pyfanedit/parsers.py:668`.
+`mentioned_fanedit_urls` collects every `<a href>` inside the article body that points to `fanedit.org` but not to `/forums/` - `pyfanedit/parsers.py:710`.
 
 > **Note:** Not all news articles mention individual fanedits. `mentioned_fanedit_urls` is an empty list for editorial pieces that only link to category or search pages.
 
@@ -266,7 +266,7 @@ Pass any of these strings as the `order` parameter to `get_user_reviews` or `ite
 | `rhelpful` | Least helpful votes first |
 | `discussed` | Most comments on the discussion thread first |
 
-`REVIEW_ORDER_CHOICES` - `pyfanedit/client.py:213`
+`REVIEW_ORDER_CHOICES` - `pyfanedit/client.py:281`
 
 ---
 [← IDs, IMDB Mapping, and Metadata](ids-and-metadata.md) · [Home](index.md)

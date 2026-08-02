@@ -9,7 +9,7 @@ pip install pyfanedit
 For a development (editable) install from a local clone:
 
 ```bash
-git clone https://github.com/OpenJarbas/pyfanedit
+git clone https://github.com/LeMetadatarr/pyfanedit
 cd pyfanedit
 pip install -e ".[test]"
 ```
@@ -54,7 +54,7 @@ print("Cut time:", detail.time_cut)
 print("Reviews:", len(detail.user_reviews))
 ```
 
-`get_detail` (`pyfanedit/client.py:176`) accepts either the full URL from a `FaneditSummary.url` or a bare slug such as `"blade-runner-final-cut-redux"`.
+`get_detail` (`pyfanedit/client.py:232`) accepts either the full URL from a `FaneditSummary.url` or a bare slug such as `"blade-runner-final-cut-redux"`.
 
 ## Follow Pagination with `iter_search`
 
