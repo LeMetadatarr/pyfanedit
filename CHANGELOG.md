@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1a5](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a5) (2026-08-03)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a4...0.3.1a5)
+
+**Merged pull requests:**
+
+- ci: grant conventional-label workflow write permissions [\#19](https://github.com/LeMetadatarr/pyfanedit/pull/19) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [0.3.1a4](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a4) (2026-08-02)
 
 [Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a3...0.3.1a4)
