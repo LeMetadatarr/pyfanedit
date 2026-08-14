@@ -241,6 +241,35 @@ class FaneditClient:
         html = self._s.get(url)
         return parse_detail_page(html, url)
 
+    def crawl(
+        self,
+        *,
+        categories=None,
+        detail: bool = True,
+        max_per_category: int = 0,
+        seen=None,
+    ) -> Iterator["FaneditDetail | FaneditSummary"]:
+        if categories is None:
+            categories = list(CATEGORIES.keys())
+        if seen is None:
+            seen = set()
+        for category in categories:
+            count = 0
+            for summary in self.iter_category(category, max_pages=0):
+                if max_per_category and count >= max_per_category:
+                    break
+                if summary.url in seen:
+                    continue
+                seen.add(summary.url)
+                count += 1
+                if detail:
+                    try:
+                        yield self.get_detail(summary.url)
+                    except Exception:
+                        continue
+                else:
+                    yield summary
+
     def get_detail_by_slug(self, slug: str) -> FaneditDetail:
         """Convenience wrapper: fetch a detail page by slug.
 
