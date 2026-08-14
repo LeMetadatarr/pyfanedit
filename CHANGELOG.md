@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0a1](https://github.com/LeMetadatarr/pyfanedit/tree/0.4.0a1) (2026-08-14)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a5...0.4.0a1)
+
+**Merged pull requests:**
+
+- feat: FaneditClient.crawl\(\) + JSONL dataset dumper [\#20](https://github.com/LeMetadatarr/pyfanedit/pull/20) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [0.3.1a5](https://github.com/LeMetadatarr/pyfanedit/tree/0.3.1a5) (2026-08-03)
 
 [Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a4...0.3.1a5)
