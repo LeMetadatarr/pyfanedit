@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0a2](https://github.com/LeMetadatarr/pyfanedit/tree/0.4.0a2) (2026-09-01)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.4.0a1...0.4.0a2)
+
+**Merged pull requests:**
+
+- Update actions/setup-python action to v7 [\#14](https://github.com/LeMetadatarr/pyfanedit/pull/14) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [0.4.0a1](https://github.com/LeMetadatarr/pyfanedit/tree/0.4.0a1) (2026-08-14)
 
 [Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.3.1a5...0.4.0a1)
@@ -63,6 +71,26 @@
 **Merged pull requests:**
 
 - feat: variant-aware fanedit\_to\_release + tests [\#4](https://github.com/LeMetadatarr/pyfanedit/pull/4) ([JarbasAl](https://github.com/JarbasAl))
+
+## [0.1.1](https://github.com/LeMetadatarr/pyfanedit/tree/0.1.1) (2026-05-04)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.1.1a3...0.1.1)
+
+## [0.1.1a3](https://github.com/LeMetadatarr/pyfanedit/tree/0.1.1a3) (2026-04-30)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.1.1a2...0.1.1a3)
+
+## [0.1.1a2](https://github.com/LeMetadatarr/pyfanedit/tree/0.1.1a2) (2026-04-30)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0.1.1a1...0.1.1a2)
+
+**Merged pull requests:**
+
+- chore: Configure Renovate [\#1](https://github.com/LeMetadatarr/pyfanedit/pull/1) ([renovate[bot]](https://github.com/apps/renovate))
+
+## [0.1.1a1](https://github.com/LeMetadatarr/pyfanedit/tree/0.1.1a1) (2026-04-30)
+
+[Full Changelog](https://github.com/LeMetadatarr/pyfanedit/compare/0eaed2979f0d18c1d69e3dbd5f60eb82ed5bd707...0.1.1a1)
 
 
 
